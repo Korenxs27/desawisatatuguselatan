@@ -23,7 +23,6 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
-  // Tanpa 'orders' dan 'pesan' di sidebar, tab aktif hanya fokus ke menu utama
   type ActiveTab = 'overview' | 'cms-beranda' | 'cms-profil' | 'wisata' | 'umkm' | 'gallery';
   const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
   
@@ -98,7 +97,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  // Urutan Menu Sidebar Sesuai Permintaan (Tanpa Status Pesanan & Pesan Warga)
   const navItems = [
     { name: 'Overview', tab: 'overview', icon: LayoutDashboard },
     { name: 'Edit Beranda', tab: 'cms-beranda', icon: Edit3 },
@@ -109,11 +107,19 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-800">
+    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-800 relative overflow-x-hidden">
       
+      {/* SIDEBAR MOBILE OVERLAY */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* SIDEBAR */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 p-6 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)] pr-2">
+      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 p-5 sm:p-6 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)] pr-1">
           
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -125,12 +131,12 @@ export default function AdminDashboardPage() {
                 <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider">Tugu Selatan</p>
               </div>
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden text-slate-500 hover:text-slate-800">
-              <X size={20} />
+            <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer">
+              <X size={18} />
             </button>
           </div>
 
-          <nav className="space-y-1">
+          <nav className="space-y-1.5">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
@@ -150,7 +156,7 @@ export default function AdminDashboardPage() {
           <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
             <div className="flex items-center gap-3">
               <ShieldCheck size={20} className="text-emerald-600 shrink-0" />
-              <div className='overflow-hidden'>
+              <div className="overflow-hidden">
                 <p className="text-xs font-bold text-slate-800 truncate">{adminName}</p>
                 <p className="text-[10px] text-slate-500">Pengelola Desa</p>
               </div>
@@ -163,7 +169,7 @@ export default function AdminDashboardPage() {
       </aside>
 
       {/* KONTEN UTAMA */}
-      <main className="flex-1 md:ml-72 p-6 sm:p-10 space-y-8">
+      <main className="flex-1 md:ml-72 p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-8 w-full min-w-0">
         
         {successMsg && (
           <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in">
@@ -172,13 +178,13 @@ export default function AdminDashboardPage() {
         )}
 
         {/* Top Header */}
-        <div className="flex items-center justify-between bg-white p-5 rounded-3xl border border-slate-100 shadow-sm">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2 rounded-xl bg-slate-100 text-slate-700">
-              <Menu size={20} />
+        <div className="flex items-center justify-between bg-white p-4 sm:p-5 rounded-3xl border border-slate-100 shadow-sm gap-3">
+          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+            <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2.5 rounded-xl bg-slate-100 text-slate-700 shrink-0 cursor-pointer">
+              <Menu size={18} />
             </button>
-            <div>
-              <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 tracking-tight">
+            <div className="min-w-0">
+              <h2 className="text-base sm:text-xl font-extrabold text-slate-900 tracking-tight truncate">
                 {activeTab === 'overview' && 'Dashboard Overview'}
                 {activeTab === 'cms-beranda' && 'Edit Konten Beranda'}
                 {activeTab === 'cms-profil' && 'Edit Profil Desa'}
@@ -186,62 +192,62 @@ export default function AdminDashboardPage() {
                 {activeTab === 'umkm' && 'Manajemen UMKM'}
                 {activeTab === 'gallery' && 'Manajemen Galeri'}
               </h2>
-              <p className="text-xs text-slate-500 font-light">Pusat kontrol administratif Desa Wisata Tugu Selatan.</p>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-light truncate">Pusat kontrol administratif Desa Wisata Tugu Selatan.</p>
             </div>
           </div>
         </div>
 
-        {/* --- 1. OVERVIEW (DENGAN WIDGET STATUS PESANAN & PESAN WARGA DI DALAMNYA) --- */}
+        {/* --- 1. OVERVIEW --- */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="space-y-6 sm:space-y-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase">Total Wisata</p>
-                  <h3 className="text-xl font-extrabold text-slate-900 mt-1">{wisataList.length} Paket</h3>
+                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Total Wisata</p>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{wisataList.length} Paket</h3>
                 </div>
-                <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center"><Compass size={20} /></div>
+                <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><Compass size={20} /></div>
               </div>
               <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase">Produk UMKM</p>
-                  <h3 className="text-xl font-extrabold text-slate-900 mt-1">{umkmList.length} Produk</h3>
+                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Produk UMKM</p>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{umkmList.length} Produk</h3>
                 </div>
-                <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center"><ShoppingBag size={20} /></div>
+                <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><ShoppingBag size={20} /></div>
               </div>
               <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase">Galeri Foto</p>
-                  <h3 className="text-xl font-extrabold text-slate-900 mt-1">{galleryList.length} Item</h3>
+                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Galeri Foto</p>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{galleryList.length} Item</h3>
                 </div>
-                <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center"><Camera size={20} /></div>
+                <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0"><Camera size={20} /></div>
               </div>
               <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
                 <div>
-                  <p className="text-[11px] font-bold text-slate-400 uppercase">Pesan Masuk</p>
-                  <h3 className="text-xl font-extrabold text-slate-900 mt-1">{messages.length} Pesan</h3>
+                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Pesan Masuk</p>
+                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{messages.length} Pesan</h3>
                 </div>
-                <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center"><MessageSquare size={20} /></div>
+                <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><MessageSquare size={20} /></div>
               </div>
             </div>
 
-            {/* Grid Dua Kolom: Status Pesanan Terbaru & Pesan Warga Terbaru */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Grid Dua Kolom */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
               
               {/* Widget Status Pesanan */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+              <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2"><ClipboardList size={18} className="text-emerald-600"/> Status Pesanan Terbaru</h3>
-                  <span className="text-[11px] text-slate-400 font-medium">Real-time update</span>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2"><ClipboardList size={18} className="text-emerald-600"/> Status Pesanan Terbaru</h3>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Real-time update</span>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {ordersList.slice(0, 3).map(order => (
-                    <div key={order.id} className="py-3 flex justify-between items-center text-xs">
-                      <div>
-                        <p className="font-bold text-slate-900">{order.customer} <span className="font-mono text-[10px] text-slate-400">({order.id})</span></p>
-                        <p className="text-slate-500 font-light">{order.item}</p>
+                    <div key={order.id} className="py-3 flex justify-between items-center text-xs gap-2">
+                      <div className="min-w-0">
+                        <p className="font-bold text-slate-900 truncate">{order.customer} <span className="font-mono text-[10px] text-slate-400">({order.id})</span></p>
+                        <p className="text-slate-500 font-light truncate">{order.item}</p>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold ${getStatusColor(order.status)}`}>
+                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 ${getStatusColor(order.status)}`}>
                         {order.status}
                       </span>
                     </div>
@@ -250,17 +256,17 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* Widget Pesan Warga */}
-              <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
+              <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2"><MessageSquare size={18} className="text-amber-600"/> Pesan & Aspirasi Warga</h3>
-                  <span className="text-[11px] text-slate-400 font-medium">Aspirasi terbaru</span>
+                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2"><MessageSquare size={18} className="text-amber-600"/> Pesan & Aspirasi Warga</h3>
+                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Aspirasi terbaru</span>
                 </div>
                 <div className="divide-y divide-slate-100">
                   {messages.slice(0, 3).map(msg => (
                     <div key={msg.id} className="py-3 space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="font-bold text-slate-900">{msg.name}</span>
-                        <span className="text-[10px] text-slate-400">{msg.date}</span>
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-slate-900 truncate">{msg.name}</span>
+                        <span className="text-[10px] text-slate-400 shrink-0">{msg.date}</span>
                       </div>
                       <p className="text-slate-600 font-light truncate">{msg.message}</p>
                     </div>
@@ -274,8 +280,8 @@ export default function AdminDashboardPage() {
 
         {/* --- 2. EDIT BERANDA (CMS) --- */}
         {activeTab === 'cms-beranda' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-8 space-y-6">
-            <h3 className="text-sm font-bold text-slate-900">Penyuntingan Konten Utama Beranda</h3>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-8 space-y-6">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900">Penyuntingan Konten Utama Beranda</h3>
             <div className="space-y-4 text-xs">
               <div>
                 <label className="block font-bold text-slate-600 uppercase mb-1">Judul Utama Hero (Hero Title)</label>
@@ -289,7 +295,7 @@ export default function AdminDashboardPage() {
                 <label className="block font-bold text-slate-600 uppercase mb-1">Teks Pengumuman / Banner</label>
                 <input type="text" value={berandaContent.announcement} onChange={e => setBerandaContent({ ...berandaContent, announcement: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
               </div>
-              <button onClick={() => showNotification("Konten Beranda berhasil disimpan!")} className="flex items-center gap-2 bg-[#0f172a] hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer">
+              <button onClick={() => showNotification("Konten Beranda berhasil disimpan!")} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0f172a] hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer">
                 <Save size={16} /> Simpan Perubahan Beranda
               </button>
             </div>
@@ -298,8 +304,8 @@ export default function AdminDashboardPage() {
 
         {/* --- 3. EDIT PROFIL DESA (CMS) --- */}
         {activeTab === 'cms-profil' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 sm:p-8 space-y-6">
-            <h3 className="text-sm font-bold text-slate-900">Penyuntingan Informasi Profil Desa</h3>
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-8 space-y-6">
+            <h3 className="text-xs sm:text-sm font-bold text-slate-900">Penyuntingan Informasi Profil Desa</h3>
             <div className="space-y-4 text-xs">
               <div>
                 <label className="block font-bold text-slate-600 uppercase mb-1">Sejarah Singkat</label>
@@ -313,7 +319,7 @@ export default function AdminDashboardPage() {
                 <label className="block font-bold text-slate-600 uppercase mb-1">Misi Desa Wisata</label>
                 <textarea rows={4} value={profilContent.mission} onChange={e => setProfilContent({ ...profilContent, mission: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
               </div>
-              <button onClick={() => showNotification("Profil Desa berhasil disimpan!")} className="flex items-center gap-2 bg-[#0f172a] hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer">
+              <button onClick={() => showNotification("Profil Desa berhasil disimpan!")} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0f172a] hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer">
                 <Save size={16} /> Simpan Perubahan Profil
               </button>
             </div>
@@ -322,21 +328,21 @@ export default function AdminDashboardPage() {
 
         {/* --- 4. KELOLA WISATA --- */}
         {activeTab === 'wisata' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-900">Daftar Destinasi & Aktivitas Wisata</h3>
-              <button onClick={() => { setWisataList([...wisataList, { id: Date.now(), title: "Destinasi Baru", category: "Ekowisata", price: "Rp 75.000", status: "Aktif" }]); showNotification("Wisata ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Daftar Destinasi & Aktivitas Wisata</h3>
+              <button onClick={() => { setWisataList([...wisataList, { id: Date.now(), title: "Destinasi Baru", category: "Ekowisata", price: "Rp 75.000", status: "Aktif" }]); showNotification("Wisata ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
                 <Plus size={15} /> Tambah Wisata
               </button>
             </div>
             <div className="divide-y divide-slate-100">
               {wisataList.map(item => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-xs">
-                  <div>
-                    <p className="font-bold text-slate-900">{item.title}</p>
-                    <p className="text-slate-500">{item.category} • <span className="text-emerald-600 font-semibold">{item.price}</span></p>
+                <div key={item.id} className="py-3.5 flex justify-between items-center text-xs gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 truncate">{item.title}</p>
+                    <p className="text-slate-500 truncate">{item.category} • <span className="text-emerald-600 font-semibold">{item.price}</span></p>
                   </div>
-                  <button onClick={() => { setWisataList(wisataList.filter(w => w.id !== item.id)); showNotification("Wisata dihapus."); }} className="p-2 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer"><Trash2 size={14} /></button>
+                  <button onClick={() => { setWisataList(wisataList.filter(w => w.id !== item.id)); showNotification("Wisata dihapus."); }} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer shrink-0"><Trash2 size={14} /></button>
                 </div>
               ))}
             </div>
@@ -345,21 +351,21 @@ export default function AdminDashboardPage() {
 
         {/* --- 5. KELOLA UMKM --- */}
         {activeTab === 'umkm' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-900">Katalog Produk UMKM Warga</h3>
-              <button onClick={() => { setUmkmList([...umkmList, { id: Date.now(), title: "Produk Baru", category: "Kuliner", price: "Rp 20.000", stock: "50 Pcs" }]); showNotification("UMKM ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Katalog Produk UMKM Warga</h3>
+              <button onClick={() => { setUmkmList([...umkmList, { id: Date.now(), title: "Produk Baru", category: "Kuliner", price: "Rp 20.000", stock: "50 Pcs" }]); showNotification("UMKM ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
                 <Plus size={15} /> Tambah Produk
               </button>
             </div>
             <div className="divide-y divide-slate-100">
               {umkmList.map(item => (
-                <div key={item.id} className="py-3 flex justify-between items-center text-xs">
-                  <div>
-                    <p className="font-bold text-slate-900">{item.title}</p>
-                    <p className="text-slate-500">{item.category} • Stok: {item.stock} • <span className="text-emerald-600 font-semibold">{item.price}</span></p>
+                <div key={item.id} className="py-3.5 flex justify-between items-center text-xs gap-3">
+                  <div className="min-w-0">
+                    <p className="font-bold text-slate-900 truncate">{item.title}</p>
+                    <p className="text-slate-500 truncate">{item.category} • Stok: {item.stock} • <span className="text-emerald-600 font-semibold">{item.price}</span></p>
                   </div>
-                  <button onClick={() => { setUmkmList(umkmList.filter(u => u.id !== item.id)); showNotification("Produk dihapus."); }} className="p-2 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer"><Trash2 size={14} /></button>
+                  <button onClick={() => { setUmkmList(umkmList.filter(u => u.id !== item.id)); showNotification("Produk dihapus."); }} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer shrink-0"><Trash2 size={14} /></button>
                 </div>
               ))}
             </div>
@@ -368,21 +374,21 @@ export default function AdminDashboardPage() {
 
         {/* --- 6. KELOLA GALERI FOTO --- */}
         {activeTab === 'gallery' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 space-y-6">
-            <div className="flex justify-between items-center">
-              <h3 className="text-sm font-bold text-slate-900">Manajemen Galeri Dokumentasi</h3>
-              <button onClick={() => { setGalleryList([...galleryList, { id: Date.now(), title: "Dokumentasi Baru", category: "Aktivitas" }]); showNotification("Foto galeri ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2 rounded-xl transition cursor-pointer">
+          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Manajemen Galeri Dokumentasi</h3>
+              <button onClick={() => { setGalleryList([...galleryList, { id: Date.now(), title: "Dokumentasi Baru", category: "Aktivitas" }]); showNotification("Foto galeri ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
                 <Plus size={15} /> Tambah Foto
               </button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {galleryList.map(item => (
-                <div key={item.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex justify-between items-center text-xs">
-                  <div>
+                <div key={item.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex justify-between items-center text-xs gap-3">
+                  <div className="min-w-0">
                     <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md uppercase">{item.category}</span>
-                    <p className="font-bold text-slate-900 mt-1">{item.title}</p>
+                    <p className="font-bold text-slate-900 mt-1 truncate">{item.title}</p>
                   </div>
-                  <button onClick={() => { setGalleryList(galleryList.filter(g => g.id !== item.id)); showNotification("Foto dihapus."); }} className="p-2 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer"><Trash2 size={14} /></button>
+                  <button onClick={() => { setGalleryList(galleryList.filter(g => g.id !== item.id)); showNotification("Foto dihapus."); }} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer shrink-0"><Trash2 size={14} /></button>
                 </div>
               ))}
             </div>

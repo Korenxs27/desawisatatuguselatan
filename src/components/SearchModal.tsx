@@ -55,7 +55,6 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
       try {
         const lowerQuery = query.toLowerCase().trim();
 
-        // Filter dari database lokal secara instan & responsif
         const filtered = masterDatabase.filter(item => 
           item.title.toLowerCase().includes(lowerQuery) || 
           (item.category && item.category.toLowerCase().includes(lowerQuery))
@@ -75,27 +74,27 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-start justify-center pt-[10vh] px-4">
-      <div className="bg-white/95 backdrop-blur-xl border border-white/40 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-800">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4">
+      <div className="bg-white/95 backdrop-blur-xl border border-white/40 w-full max-w-2xl rounded-[2rem] sm:rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200 text-slate-800">
         
         {/* Input Bar */}
-        <div className="p-4 flex items-center gap-3 border-b border-slate-100">
-          <Search className="text-slate-400 shrink-0" size={20} />
+        <div className="p-3.5 sm:p-4 flex items-center gap-3 border-b border-slate-100">
+          <Search className="text-slate-400 shrink-0" size={18} />
           <input
             type="text"
-            placeholder="Cari wisata, produk UMKM, profil, atau kontak..."
-            className="w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-400 font-light"
+            placeholder="Cari wisata, produk UMKM, profil..."
+            className="w-full bg-transparent text-xs sm:text-sm text-slate-800 outline-none placeholder:text-slate-400 font-light"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
           />
-          <button onClick={onClose} className="p-1.5 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition cursor-pointer">
+          <button onClick={onClose} className="p-2 rounded-xl bg-slate-100 text-slate-500 hover:bg-slate-200 transition cursor-pointer shrink-0">
             <X size={16} />
           </button>
         </div>
 
         {/* Results Area */}
-        <div className="max-h-[60vh] overflow-y-auto p-4 space-y-3">
+        <div className="max-h-[55vh] sm:max-h-[60vh] overflow-y-auto p-3 sm:p-4 space-y-3">
           {loading && (
             <div className="flex items-center justify-center py-8 gap-2 text-xs text-slate-400 font-light">
               <Loader2 className="animate-spin text-emerald-600" size={16} /> Mencari data...
@@ -110,9 +109,9 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
                   key={`${res.type}-${res.id}`}
                   href={res.slug}
                   onClick={onClose}
-                  className="flex items-center gap-3 p-2.5 rounded-2xl hover:bg-emerald-50/70 border border-transparent hover:border-emerald-100 transition group"
+                  className="flex items-center gap-3 p-2 sm:p-2.5 rounded-2xl hover:bg-emerald-50/70 border border-transparent hover:border-emerald-100 transition group"
                 >
-                  <div className="relative w-12 h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/40">
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-slate-200/40">
                     <Image src={res.image || "https://images.unsplash.com/photo-1544735716-392fe2489ffa"} alt={res.title} fill className="object-cover" />
                   </div>
                   <div className="flex-grow min-w-0">
@@ -121,7 +120,7 @@ export default function SearchModal({ isOpen, onClose }: { isOpen: boolean; onCl
                     }`}>
                       {res.type}
                     </span>
-                    <h4 className="text-xs font-semibold text-slate-800 truncate group-hover:text-emerald-700 transition">{res.title}</h4>
+                    <h4 className="text-xs sm:text-sm font-semibold text-slate-800 truncate group-hover:text-emerald-700 transition">{res.title}</h4>
                   </div>
                   <ArrowRight size={14} className="text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-1 transition shrink-0" />
                 </Link>

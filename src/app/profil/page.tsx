@@ -24,16 +24,16 @@ export default function ProfilDesaPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/40 pt-16 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
-      
-      {/* Background Soft Glow Effects (Disesuaikan jadi nuansa hijau) */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/40 pt-16 sm:pt-20 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
 
-      <div className="max-w-6xl mx-auto space-y-20 relative z-10">
-        
+      {/* Background Soft Glow Effects */}
+      <div className="absolute top-0 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-6xl mx-auto space-y-12 sm:space-y-20 relative z-10">
+
         {/* Header Title */}
-        <div className="text-center space-y-3 max-w-xl mx-auto">
+        <div className="text-center space-y-3 max-w-xl mx-auto px-2">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
             Profil Desa Tugu Selatan
           </h1>
@@ -44,9 +44,9 @@ export default function ProfilDesaPage() {
 
         {/* Sejarah Singkat */}
         {profil.sejarah && (
-          <div className="bg-white/70 backdrop-blur-xl p-8 sm:p-12 rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="bg-white/75 backdrop-blur-xl p-6 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {profil.image_sejarah_url && (
-              <div className="relative aspect-[4/3] rounded-3xl overflow-hidden bg-slate-100 border border-slate-200/60 shadow-inner">
+              <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden bg-slate-100 border border-slate-200/60 shadow-inner">
                 <Image 
                   src={profil.image_sejarah_url} 
                   alt="Sejarah Desa Tugu Selatan" 
@@ -56,8 +56,8 @@ export default function ProfilDesaPage() {
                 />
               </div>
             )}
-            <div className="space-y-4">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Sejarah Singkat Desa</h2>
+            <div className="space-y-3 sm:space-y-4">
+              <h2 className="text-xl sm:text-3xl font-bold text-slate-900">Sejarah Singkat Desa</h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line font-light">
                 {profil.sejarah}
               </p>
@@ -67,12 +67,12 @@ export default function ProfilDesaPage() {
 
         {/* Visi & Misi */}
         {(profil.visi || profil.misi) && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
             {profil.visi && (
-              <div className="bg-gradient-to-br from-slate-900 to-emerald-950 backdrop-blur-xl border border-slate-800 text-white p-8 sm:p-10 rounded-[2.5rem] space-y-6 shadow-xl flex flex-col justify-between">
-                <div className="space-y-4">
-                  <h3 className="text-2xl font-bold text-white">Visi Utama Desa</h3>
-                  <blockquote className="text-sm text-slate-200 italic leading-relaxed border-l-2 border-emerald-400 pl-4 font-light">
+              <div className="bg-gradient-to-br from-slate-900 to-emerald-950 backdrop-blur-xl border border-slate-800 text-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] space-y-5 sm:space-y-6 shadow-xl flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <h3 className="text-xl sm:text-2xl font-bold text-white">Visi Utama Desa</h3>
+                  <blockquote className="text-xs sm:text-sm text-slate-200 italic leading-relaxed border-l-2 border-emerald-400 pl-4 font-light">
                     &ldquo;{profil.visi}&rdquo;
                   </blockquote>
                 </div>
@@ -81,9 +81,9 @@ export default function ProfilDesaPage() {
             )}
 
             {profil.misi && (
-              <div className="bg-white/70 backdrop-blur-xl p-8 sm:p-10 rounded-[2.5rem] border border-white/85 space-y-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
-                <div className="space-y-4">
-                  <h3 className="text-2xl font-bold text-slate-900">Misi Kerja Desa</h3>
+              <div className="bg-white/75 backdrop-blur-xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-white/85 space-y-5 sm:space-y-6 shadow-xl shadow-slate-200/50 flex flex-col justify-between">
+                <div className="space-y-3 sm:space-y-4">
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">Misi Kerja Desa</h3>
                   <div className="text-xs sm:text-sm text-slate-600 leading-relaxed whitespace-pre-line space-y-2 font-light">
                     {profil.misi}
                   </div>
@@ -95,21 +95,21 @@ export default function ProfilDesaPage() {
 
         {/* Struktur Organisasi BPH */}
         {Array.isArray(profil.struktur) && profil.struktur.length > 0 && (
-          <div className="space-y-10 text-center">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">Jajaran Pengelola Utama</span>
-              <h2 className="text-3xl font-bold text-slate-900">Struktur Badan Pengurus Harian (BPH)</h2>
+          <div className="space-y-8 sm:space-y-10 text-center">
+            <div className="space-y-2 px-2">
+              <span className="text-[11px] sm:text-xs font-bold text-emerald-600 uppercase tracking-widest">Jajaran Pengelola Utama</span>
+              <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">Struktur Badan Pengurus Harian (BPH)</h2>
             </div>
 
-            <div className="flex flex-wrap justify-center items-stretch gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
               {profil.struktur.map((item: any, idx: number) => (
-                <div key={idx} className="w-full sm:w-[calc(50%-12px)] md:w-[calc(25%-18px)] max-w-sm bg-white/70 backdrop-blur-xl p-8 rounded-[2rem] border border-white/85 shadow-xl shadow-slate-200/50 space-y-4 flex flex-col justify-between text-center hover:shadow-2xl hover:border-emerald-500/30 transition duration-300">
+                <div key={idx} className="bg-white/75 backdrop-blur-xl p-6 sm:p-8 rounded-[2rem] border border-white/85 shadow-xl shadow-slate-200/50 space-y-4 flex flex-col justify-between text-center hover:shadow-2xl hover:border-emerald-500/30 transition duration-300 h-full">
                   <div className="space-y-3">
-                    <div className="w-14 h-14 bg-emerald-50 border border-emerald-500/20 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center font-bold shadow-sm">
-                      <Users size={24} />
+                    <div className="w-12 h-12 sm:w-14 sm:h-14 bg-emerald-50 border border-emerald-500/20 text-emerald-600 rounded-2xl mx-auto flex items-center justify-center font-bold shadow-sm">
+                      <Users size={22} />
                     </div>
                     <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-widest block">{item.jabatan}</span>
-                    <h4 className="text-base font-bold text-slate-900 uppercase tracking-wide">{item.nama}</h4>
+                    <h4 className="text-sm sm:text-base font-bold text-slate-900 uppercase tracking-wide">{item.nama}</h4>
                     <p className="text-xs text-slate-500 font-light leading-relaxed">{item.deskripsi}</p>
                   </div>
                 </div>
@@ -120,11 +120,11 @@ export default function ProfilDesaPage() {
 
         {/* Statistik / Keunggulan Desa */}
         {Array.isArray(profil.statistik) && profil.statistik.length > 0 && (
-          <div className="bg-white/70 backdrop-blur-xl p-8 sm:p-10 rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50">
+          <div className="bg-white/75 backdrop-blur-xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center justify-center items-center">
               {profil.statistik.map((stat: any, idx: number) => (
-                <div key={idx} className="space-y-2 p-4 border-b sm:border-b-0 sm:border-r border-slate-200/80 last:border-none">
-                  <h4 className="text-3xl sm:text-4xl font-extrabold text-emerald-600">{stat.nilai}</h4>
+                <div key={idx} className="space-y-1.5 p-3 sm:p-4 border-b sm:border-b-0 sm:border-r border-slate-200/80 last:border-none">
+                  <h4 className="text-2xl sm:text-4xl font-extrabold text-emerald-600">{stat.nilai}</h4>
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
                 </div>
               ))}

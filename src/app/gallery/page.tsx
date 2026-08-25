@@ -94,15 +94,16 @@ export default function GalleryPage() {
     : galleryItems.filter(item => item.category === activeCategory);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/40 to-teal-50/50 pt-15 sm:pt-15 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/40 to-teal-50/50 pt-16 sm:pt-20 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
       
-      <div className="absolute top-10 left-1/4 w-[450px] h-[450px] bg-emerald-400/15 rounded-full blur-[100px] pointer-events-none"></div>
-      <div className="absolute bottom-20 right-1/4 w-[450px] h-[450px] bg-teal-400/15 rounded-full blur-[100px] pointer-events-none"></div>
+      {/* Background Soft Glow Effects */}
+      <div className="absolute top-10 left-1/4 w-[300px] sm:w-[450px] h-[300px] sm:h-[450px] bg-emerald-400/15 rounded-full blur-[100px] pointer-events-none"></div>
+      <div className="absolute bottom-20 right-1/4 w-[300px] sm:w-[450px] h-[300px] sm:h-[450px] bg-teal-400/15 rounded-full blur-[100px] pointer-events-none"></div>
 
-      <div className="max-w-6xl mx-auto space-y-12 relative z-10">
+      <div className="max-w-6xl mx-auto space-y-10 sm:space-y-12 relative z-10">
         
         {/* Header Title */}
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
+        <div className="text-center space-y-3 max-w-2xl mx-auto px-2">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
             Galeri Foto & Aktivitas
           </h1>
@@ -112,15 +113,15 @@ export default function GalleryPage() {
         </div>
 
         {/* Filter Kategori */}
-        <div className="flex flex-wrap justify-center items-center gap-2 pt-2">
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 mr-2 font-medium">
+        <div className="flex flex-wrap justify-center items-center gap-1.5 sm:gap-2 pt-2">
+          <div className="flex items-center gap-1 text-xs text-slate-500 mr-1 sm:mr-2 font-medium">
             <Filter size={14} /> Filter:
           </div>
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-semibold transition cursor-pointer ${
+              className={`px-3.5 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-semibold transition cursor-pointer ${
                 activeCategory === cat
                   ? "bg-[#0f172a] text-white shadow-md shadow-slate-900/10"
                   : "bg-white/80 hover:bg-slate-200 text-slate-600 border border-slate-200/80"
@@ -137,7 +138,7 @@ export default function GalleryPage() {
             <div 
               key={item.id}
               onClick={() => setSelectedImage(item)}
-              className="bg-white/80 backdrop-blur-xl border border-slate-200/90 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col group cursor-pointer"
+              className="bg-white/80 backdrop-blur-xl border border-slate-200/90 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col group cursor-pointer h-full"
             >
               <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
                 <Image 
@@ -146,8 +147,8 @@ export default function GalleryPage() {
                   fill 
                   className="object-cover group-hover:scale-105 transition duration-700" 
                 />
-                <div className="absolute top-4 left-4">
-                  <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[10px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider shadow">
+                <div className="absolute top-3.5 left-3.5">
+                  <span className="bg-white/90 backdrop-blur-md text-slate-800 text-[9px] sm:text-[10px] font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider shadow">
                     {item.category}
                   </span>
                 </div>
@@ -158,8 +159,8 @@ export default function GalleryPage() {
                 </div>
               </div>
 
-              <div className="p-6 flex flex-col justify-between flex-grow space-y-2">
-                <h3 className="text-sm font-bold text-slate-900 group-hover:text-emerald-700 transition">
+              <div className="p-5 sm:p-6 flex flex-col justify-between flex-grow space-y-2">
+                <h3 className="text-sm sm:text-base font-bold text-slate-900 group-hover:text-emerald-700 transition">
                   {item.title}
                 </h3>
                 <p className="text-xs text-slate-500 leading-relaxed font-light">
@@ -173,7 +174,7 @@ export default function GalleryPage() {
 
       {/* MODAL POP-UP / LIGHTBOX DENGAN ZOOM & HOVER TEXT */}
       {selectedImage && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 sm:p-6">
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-3 sm:p-6">
           
           {/* Backdrop Gelap Blur */}
           <div 
@@ -182,20 +183,19 @@ export default function GalleryPage() {
           ></div>
 
           {/* Konten Kotak Modal */}
-          <div className="relative w-full max-w-4xl bg-black rounded-[2.5rem] shadow-2xl overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200 group/modal">
+          <div className="relative w-full max-w-4xl bg-black rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl overflow-hidden z-10 animate-in fade-in zoom-in-95 duration-200 group/modal">
             
             {/* Tombol Tutup */}
             <button
               onClick={() => setSelectedImage(null)}
-              className="absolute top-4 right-4 z-30 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white transition shadow-lg cursor-pointer backdrop-blur-md"
+              className="absolute top-3 right-3 sm:top-4 sm:right-4 z-30 p-2.5 rounded-full bg-black/60 hover:bg-black/90 text-white transition shadow-lg cursor-pointer backdrop-blur-md"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
 
             {/* Area Gambar dengan Efek Zoom & Teks Hover di Atas Gambar */}
-            <div className="relative w-full h-[75vh] sm:h-[80vh] overflow-hidden bg-slate-950 flex items-center justify-center">
+            <div className="relative w-full h-[65vh] sm:h-[80vh] overflow-hidden bg-slate-950 flex items-center justify-center">
               
-              {/* Gambar dengan efek zoom saat hover modal */}
               <Image 
                 src={selectedImage.img} 
                 alt={selectedImage.title} 
@@ -207,18 +207,18 @@ export default function GalleryPage() {
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent pointer-events-none"></div>
 
               {/* Badge Kategori */}
-              <div className="absolute top-6 left-6 z-20">
-                <span className="bg-white/90 backdrop-blur-md text-slate-900 text-xs font-bold px-4 py-2 rounded-xl uppercase tracking-wider shadow">
+              <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-20">
+                <span className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] sm:text-xs font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl uppercase tracking-wider shadow">
                   {selectedImage.category}
                 </span>
               </div>
 
-              {/* Teks Deskripsi yang Muncul (Fade In) saat di-Hover */}
-              <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-10 z-20 text-white transform translate-y-4 opacity-0 group-hover/modal:translate-y-0 group-hover/modal:opacity-100 transition-all duration-300 ease-out space-y-2">
-                <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+              {/* Teks Deskripsi */}
+              <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-10 z-20 text-white transform sm:translate-y-4 sm:opacity-0 group-hover/modal:translate-y-0 group-hover/modal:opacity-100 transition-all duration-300 ease-out space-y-1.5 sm:space-y-2">
+                <h2 className="text-lg sm:text-2xl font-extrabold tracking-tight">
                   {selectedImage.title}
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-200 font-light leading-relaxed max-w-2xl">
+                <p className="text-[11px] sm:text-sm text-slate-200 font-light leading-relaxed max-w-2xl">
                   {selectedImage.desc}
                 </p>
               </div>

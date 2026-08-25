@@ -82,25 +82,25 @@ export default function LoginPage() {
     <div className="min-h-screen w-screen fixed inset-0 z-[999999] flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 via-emerald-50/40 to-teal-50/50 overflow-y-auto font-sans">
       
       {/* Background Soft Clean Glows */}
-      <div className="absolute top-10 left-1/4 w-[450px] h-[450px] bg-emerald-400/15 rounded-full blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-10 right-1/4 w-[450px] h-[450px] bg-teal-400/15 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute top-10 left-1/4 w-[300px] sm:w-[450px] h-[300px] sm:h-[450px] bg-emerald-400/15 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-10 right-1/4 w-[300px] sm:w-[450px] h-[300px] sm:h-[450px] bg-teal-400/15 rounded-full blur-[100px] pointer-events-none" />
 
       {/* Tombol Kembali ke Beranda */}
-      <div className="absolute top-6 left-6 z-25">
+      <div className="absolute top-4 sm:top-6 left-4 sm:left-6 z-25">
         <Link 
           href="/" 
-          className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border border-slate-200/80 text-slate-700 hover:text-emerald-700 hover:bg-white transition text-xs font-bold shadow-sm"
+          className="flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4 py-2 rounded-full bg-white/85 backdrop-blur-md border border-slate-200/80 text-slate-700 hover:text-emerald-700 hover:bg-white transition text-[11px] sm:text-xs font-bold shadow-sm"
         >
-          <ArrowLeft size={14} /> Kembali ke Beranda
+          <ArrowLeft size={14} /> Beranda
         </Link>
       </div>
 
       {/* Card Container (Clean Light Style) */}
-      <div className="relative z-10 max-w-md w-full bg-white/90 backdrop-blur-2xl border border-white/90 rounded-[2.5rem] shadow-2xl shadow-slate-200/50 p-8 text-slate-800">
+      <div className="relative z-10 max-w-md w-full bg-white/90 backdrop-blur-2xl border border-white/90 rounded-[2rem] sm:rounded-[2.5rem] shadow-2xl shadow-slate-200/50 p-6 sm:p-8 text-slate-800 my-auto">
         
         {/* Logo Desa / Brand di Bagian Atas Card */}
-        <div className="text-center mb-6 space-y-3">
-          <div className="w-14 h-14 rounded-full overflow-hidden flex items-center justify-center bg-white border border-emerald-200 shadow-md mx-auto">
+        <div className="text-center mb-5 sm:mb-6 space-y-2.5 sm:space-y-3">
+          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-full overflow-hidden flex items-center justify-center bg-white border border-emerald-200 shadow-md mx-auto">
             <img 
               src="/images/logo tugu selatan.jpg" 
               alt="Logo Tugu Selatan" 
@@ -110,17 +110,17 @@ export default function LoginPage() {
 
           {/* Toggle Tab */}
           {!isForgotPassword && (
-            <div className="flex bg-slate-100 p-1 rounded-2xl mb-4 border border-slate-200/60 mt-4">
+            <div className="flex bg-slate-100 p-1 rounded-2xl mb-3 sm:mb-4 border border-slate-200/60 mt-3 sm:mt-4">
               <button
                 type="button"
-                className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${!isSignUp ? 'bg-[#0f172a] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`flex-1 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${!isSignUp ? 'bg-[#0f172a] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                 onClick={() => { setIsSignUp(false); setMsg(null); }}
               >
                 Sign In
               </button>
               <button
                 type="button"
-                className={`flex-1 py-2.5 text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${isSignUp ? 'bg-[#0f172a] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
+                className={`flex-1 py-2 sm:py-2.5 text-[11px] sm:text-xs font-bold rounded-xl transition-all duration-300 cursor-pointer ${isSignUp ? 'bg-[#0f172a] text-white shadow-sm' : 'text-slate-500 hover:text-slate-800'}`}
                 onClick={() => { setIsSignUp(true); setMsg(null); }}
               >
                 Sign Up
@@ -129,10 +129,10 @@ export default function LoginPage() {
           )}
 
           {/* Heading */}
-          <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
             {isForgotPassword ? 'Reset Password' : isSignUp ? 'Buat Akun Baru' : 'Portal Pengelola'}
           </h2>
-          <p className="text-xs text-slate-500 font-light leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-slate-500 font-light leading-relaxed px-2">
             {isForgotPassword 
               ? 'Masukkan email terdaftar untuk pemulihan akun' 
               : isSignUp 
@@ -184,7 +184,7 @@ export default function LoginPage() {
             </button>
           </form>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-4">
             
             {/* Input Username / Email */}
             <div>
@@ -253,7 +253,7 @@ export default function LoginPage() {
 
             {/* Tombol Lupa Password */}
             {!isSignUp && (
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-0.5">
                 <button
                   type="button"
                   onClick={() => { setIsForgotPassword(true); setMsg(null); }}

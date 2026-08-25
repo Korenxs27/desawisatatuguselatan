@@ -85,16 +85,16 @@ export default function WisataPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/40 pt-16 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/40 pt-16 sm:pt-20 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
       
-      {/* Background Soft Glow Effects (Disesuaikan jadi nuansa hijau) */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 right-1/4 w-96 h-96 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Background Soft Glow Effects */}
+      <div className="absolute top-0 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute bottom-10 right-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
 
-      <div className="max-w-6xl mx-auto space-y-16 relative z-10">
+      <div className="max-w-6xl mx-auto space-y-12 sm:space-y-16 relative z-10">
         
         {/* Header Title */}
-        <div className="text-center space-y-3 max-w-xl mx-auto">
+        <div className="text-center space-y-3 max-w-xl mx-auto px-2">
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
             Destinasi & Paket Wisata
           </h1>
@@ -104,30 +104,30 @@ export default function WisataPage() {
         </div>
 
         {/* SEARCH & FILTER BAR SECTION */}
-        <div className="bg-white/70 backdrop-blur-xl p-6 sm:p-8 rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50 space-y-6">
+        <div className="bg-white/75 backdrop-blur-xl p-5 sm:p-8 rounded-[2rem] sm:rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50 space-y-5 sm:space-y-6">
           
           {/* Input Search */}
           <div className="relative">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" size={20} />
+            <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
             <input 
               type="text" 
-              placeholder="Cari nama paket wisata atau aktivitas (Cth: Offroad, Trekking)..." 
+              placeholder="Cari nama paket wisata atau aktivitas..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50/80 border border-slate-200 rounded-2xl pl-14 pr-6 py-4 text-sm text-slate-800 outline-none focus:border-emerald-600 transition shadow-inner font-medium"
+              className="w-full bg-slate-50/80 border border-slate-200 rounded-2xl pl-12 sm:pl-14 pr-4 sm:pr-6 py-3.5 sm:py-4 text-xs sm:text-sm text-slate-800 outline-none focus:border-emerald-600 transition shadow-inner font-medium placeholder:text-slate-400"
             />
           </div>
 
           {/* Filter Kategori Buttons */}
-          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-200/60">
-            <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mr-2 flex items-center gap-1">
-              <Filter size={14} /> Kategori:
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-200/60">
+            <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 sm:mr-2 flex items-center gap-1">
+              <Filter size={13} /> Kategori:
             </span>
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-semibold transition ${
+                className={`px-3 sm:px-4 py-2 rounded-xl text-[11px] sm:text-xs font-semibold transition cursor-pointer ${
                   selectedCategory === cat
                     ? "bg-[#0f172a] text-white shadow-md shadow-slate-900/10"
                     : "bg-slate-100/80 hover:bg-slate-200 text-slate-600 border border-slate-200/60"
@@ -142,9 +142,9 @@ export default function WisataPage() {
 
         {/* DAFTAR KARTU DESTINASI / PAKET */}
         {filteredWisata.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
             {filteredWisata.map((item) => (
-              <div key={item.id}>
+              <div key={item.id} className="h-full">
                 <Link 
                   href={`/wisata/${item.slug}`} 
                   className="bg-white/80 backdrop-blur-xl border border-slate-200/90 rounded-[2rem] overflow-hidden shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group"
@@ -155,26 +155,26 @@ export default function WisataPage() {
                       alt={item.title} 
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-700" 
                     />
-                    <span className="absolute top-4 left-4 bg-slate-900/80 backdrop-blur-md text-white text-[10px] font-bold px-3.5 py-1.5 rounded-xl uppercase tracking-wider z-10 shadow">
+                    <span className="absolute top-3.5 left-3.5 sm:top-4 sm:left-4 bg-slate-900/80 backdrop-blur-md text-white text-[9px] sm:text-[10px] font-bold px-3 py-1 rounded-xl uppercase tracking-wider z-10 shadow">
                       {item.category}
                     </span>
                   </div>
 
-                  <div className="p-7 flex flex-col justify-between flex-grow space-y-4">
+                  <div className="p-5 sm:p-7 flex flex-col justify-between flex-grow space-y-4">
                     <div className="space-y-2">
-                      <h3 className="text-base font-bold text-slate-900">{item.title}</h3>
+                      <h3 className="text-sm sm:text-base font-bold text-slate-900">{item.title}</h3>
                       <p className="text-xs text-slate-500 leading-relaxed font-light line-clamp-2">{item.desc}</p>
                     </div>
 
-                    <div className="flex justify-between items-center pt-4 border-t border-slate-100/80">
+                    <div className="flex justify-between items-center pt-4 border-t border-slate-100/80 gap-2">
                       <div>
                         <span className="text-[10px] text-slate-400 block">Tarif / Harga</span>
-                        <span className="text-emerald-600 font-bold text-sm">
-                          Rp. {item.price.toLocaleString("id-ID")} <span className="text-[11px] text-slate-400 font-normal">{item.unit}</span>
+                        <span className="text-emerald-600 font-bold text-xs sm:text-sm">
+                          Rp. {item.price.toLocaleString("id-ID")} <span className="text-[10px] sm:text-[11px] text-slate-400 font-normal">{item.unit}</span>
                         </span>
                       </div>
-                      <span className="bg-slate-900 group-hover:bg-emerald-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-1 shadow-sm">
-                        Detail & Booking <ArrowUpRight size={14} />
+                      <span className="bg-slate-900 group-hover:bg-emerald-600 text-white text-[11px] sm:text-xs font-bold px-3.5 sm:px-4 py-2 sm:py-2.5 rounded-xl transition flex items-center gap-1 shadow-sm shrink-0">
+                        Detail <ArrowUpRight size={14} />
                       </span>
                     </div>
                   </div>
@@ -183,9 +183,9 @@ export default function WisataPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white/70 backdrop-blur-xl p-12 rounded-[2.5rem] border border-white/85 text-center space-y-3 shadow-xl">
-            <span className="text-4xl block">🔍</span>
-            <h3 className="text-lg font-bold text-slate-900">Paket Wisata Tidak Ditemukan</h3>
+          <div className="bg-white/75 backdrop-blur-xl p-8 sm:p-12 rounded-[2rem] sm:rounded-[2.5rem] border border-white/85 text-center space-y-3 shadow-xl">
+            <span className="text-3xl sm:text-4xl block">🔍</span>
+            <h3 className="text-base sm:text-lg font-bold text-slate-900">Paket Wisata Tidak Ditemukan</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto font-light">
               Maaf, kata kunci atau kategori yang Anda cari belum tersedia. Coba gunakan kata kunci lain.
             </p>
