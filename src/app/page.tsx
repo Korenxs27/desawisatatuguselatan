@@ -34,7 +34,25 @@ export default function HomePage() {
       <section className="max-w-[1200px] mx-auto px-4 sm:px-6 pt-6 sm:pt-12 pb-16 sm:pb-24 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 items-center">
           
-          <div className="space-y-5 text-center md:text-left">
+          {/* Hero Bagian Kanan (Gambar) - Diberi class order-1 di HP agar tampil paling atas */}
+          <div className="order-1 md:order-2 relative p-2.5 sm:p-3 rounded-[2rem] sm:rounded-[2.5rem] bg-white/50 backdrop-blur-2xl border border-white/80 shadow-xl sm:shadow-2xl shadow-emerald-900/5">
+            <div className="relative aspect-[16/11] rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner">
+              <img 
+                src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=800" 
+                alt="Keindahan Tugu Selatan Puncak" 
+                className="w-full h-full object-cover hover:scale-105 transition duration-700" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4 sm:p-6">
+                <div className="text-white space-y-1">
+                  <span className="text-[9px] sm:text-[10px] bg-emerald-600 font-bold px-2.5 sm:px-3 py-1 rounded-full uppercase tracking-wider">Kawasan Wisata Terpadu</span>
+                  <h4 className="text-xs sm:text-sm font-bold pt-1">Desa Wisata Asri & Sejuk Puncak</h4>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Bagian Kiri (Teks & Tombol) - Diberi class order-2 di HP agar tampil di bawah gambar */}
+          <div className="order-2 md:order-1 space-y-5 text-center md:text-left">
             <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-[#0f172a] leading-[1.15]">
               Eksplorasi Keindahan <br className="hidden sm:inline" />
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-teal-500">Tugu Selatan Puncak</span>
@@ -51,23 +69,6 @@ export default function HomePage() {
                 <Calendar size={16} className="shrink-0 text-emerald-400" /> 
                 <span>Jelajahi Destinasi & Paket</span>
               </a>
-            </div>
-          </div>
-
-          {/* Hero Bagian Kanan (Gambar) */}
-          <div className="relative p-2.5 sm:p-3 rounded-[2rem] sm:rounded-[2.5rem] bg-white/50 backdrop-blur-2xl border border-white/80 shadow-xl sm:shadow-2xl shadow-emerald-900/5">
-            <div className="relative aspect-[16/11] rounded-2xl sm:rounded-3xl overflow-hidden shadow-inner">
-              <img 
-                src="https://images.unsplash.com/photo-1544735716-392fe2489ffa?auto=format&fit=crop&q=80&w=800" 
-                alt="Keindahan Tugu Selatan Puncak" 
-                className="w-full h-full object-cover hover:scale-105 transition duration-700" 
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-transparent to-transparent flex items-end p-4 sm:p-6">
-                <div className="text-white space-y-1">
-                  <span className="text-[9px] sm:text-[10px] bg-emerald-600 font-bold px-2.5 sm:px-3 py-1 rounded-full uppercase tracking-wider">Kawasan Wisata Terpadu</span>
-                  <h4 className="text-xs sm:text-sm font-bold pt-1">Desa Wisata Asri & Sejuk Puncak</h4>
-                </div>
-              </div>
             </div>
           </div>
 
