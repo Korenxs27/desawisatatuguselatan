@@ -77,12 +77,15 @@ export default async function UMKMDetailPage({ params }: PageProps) {
           const item = wpData[0];
           const imgUrl = item._embedded?.['wp:featuredmedia']?.[0]?.source_url || "";
 
+          // Ambil harga dari meta / WooCommerce bawaan
+          const rawPrice = item.meta?._price || item.meta?._regular_price || item.price || "0";
+
           product = {
             id: item.id,
             name: item.title?.rendered || "Produk UMKM",
-            price: item.meta?._price || "0",
-            regular_price: item.meta?._regular_price || "0",
-            sale_price: item.meta?._sale_price || "",
+            price: String(rawPrice),
+            regular_price: String(item.meta?._regular_price || rawPrice),
+            sale_price: String(item.meta?._sale_price || ""),
             description: item.content?.rendered || "",
             short_description: item.excerpt?.rendered || "",
             slug: item.slug,
@@ -104,6 +107,15 @@ export default async function UMKMDetailPage({ params }: PageProps) {
   }
 
   if (!product) return notFound();
+
+  // Konversi angka harga aman
+  const numericPrice = Number(
+    product.price && product.price !== "" 
+      ? product.price 
+      : product.regular_price && product.regular_price !== "" 
+        ? product.regular_price 
+        : 0
+  );
 
   const isSale = Boolean(product.sale_price && product.regular_price);
   const hasDimensions = Boolean(
@@ -188,11 +200,11 @@ export default async function UMKMDetailPage({ params }: PageProps) {
                 <span className="text-[10px] text-neutral-400 uppercase tracking-widest font-bold block mb-1">Harga Resmi</span>
                 <div className="flex items-baseline gap-2">
                   <h3 className="text-3xl font-light tracking-tight text-neutral-900">
-                    Rp {product.price ? parseInt(product.price).toLocaleString("id-ID") : "0"}
+                    Rp {numericPrice.toLocaleString("id-ID")}
                   </h3>
                   {isSale && (
                     <span className="text-xs text-neutral-400 line-through font-light">
-                      Rp {parseInt(product.regular_price).toLocaleString("id-ID")}
+                      Rp {Number(product.regular_price || 0).toLocaleString("id-ID")}
                     </span>
                   )}
                 </div>
@@ -231,11 +243,12 @@ export default async function UMKMDetailPage({ params }: PageProps) {
               </div>
             )}
 
+            {/* HARGA SUDAH DI-PASS DENGAN ANGKA VALIID */}
             <ClientOrderForm 
               product={{
                 id: product.id,
                 name: product.name,
-                price: parseInt(product.price || "0")
+                price: numericPrice
               }}
               stockStatus={product.stock_status}
             />
