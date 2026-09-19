@@ -1,6 +1,5 @@
 import { getProductBySlug, getProducts } from "@/lib/woocommerce";
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Script from "next/script";
 import Link from "next/link";
 import { ShieldCheck, Layers, Scale, Maximize2, CheckCircle, AlertCircle, ArrowLeft } from "lucide-react";
@@ -46,16 +45,15 @@ interface PageProps {
 }
 
 export default async function UMKMDetailPage({ params }: PageProps) {
-  // Unwrap params untuk Next.js 15+
   const resolvedParams = await params;
   const slug = resolvedParams?.slug;
 
   if (!slug) return notFound();
 
-  // 1. Cari data berdasarkan exact slug di WooCommerce
+  // 1. Cari data berdasarkan exact slug di WooCommerce API
   let product: ProdukDesa | null = await getProductBySlug(slug);
 
-  // 2. Fallback WooCommerce: Cari produk pertama yang nama slug-nya mirip
+  // 2. Fallback WooCommerce: Cari dari seluruh daftar produk jika exact slug ter-encode beda
   if (!product) {
     const allProducts = await getProducts();
     if (Array.isArray(allProducts) && allProducts.length > 0) {
@@ -67,40 +65,44 @@ export default async function UMKMDetailPage({ params }: PageProps) {
     }
   }
 
-  // 3. Fallback WordPress REST API: Jika item di-publish via Custom Post Type (CPT) 'umkm'
+  // 3. Fallback WordPress REST API: Mengambil langsung dari Post Type WooCommerce Product (/wp/v2/product)
   if (!product) {
     try {
-      // Ambil host domain internal atau relatif
-      const resWp = await fetch(`/api-wp/wp/v2/umkm?slug=${slug}&_embed`, { cache: 'no-store' }).catch(() => null);
+      const baseUrl = process.env.NEXT_PUBLIC_WORDPRESS_URL || "https://desawisatatuguselatan.vercel.app";
+      const resWp = await fetch(`${baseUrl}/api-wp/wp/v2/product?slug=${slug}&_embed`, { cache: 'no-store' }).catch(() => null);
+      
       if (resWp && resWp.ok) {
         const wpData = await resWp.json();
         if (Array.isArray(wpData) && wpData.length > 0) {
           const item = wpData[0];
-          const imgUrl = item._embedded?.['wp:featuredmedia']?.[0]?.source_url || item.acf?.gallery_images?.[0] || "";
+          const imgUrl = item._embedded?.['wp:featuredmedia']?.[0]?.source_url || "";
 
           product = {
             id: item.id,
             name: item.title?.rendered || "Produk UMKM",
-            price: item.acf?.harga ? String(item.acf.harga) : "0",
-            regular_price: item.acf?.harga ? String(item.acf.harga) : "0",
-            sale_price: "",
+            price: item.meta?._price || "0",
+            regular_price: item.meta?._regular_price || "0",
+            sale_price: item.meta?._sale_price || "",
             description: item.content?.rendered || "",
             short_description: item.excerpt?.rendered || "",
             slug: item.slug,
             images: imgUrl ? [{ id: 1, src: imgUrl, name: item.title?.rendered || "" }] : [],
-            categories: [{ id: 1, name: item.acf?.kategori || "Produk UMKM" }],
-            weight: item.acf?.berat ? String(item.acf.berat) : "",
-            dimensions: { length: "", width: "", height: "" },
-            stock_status: "instock"
+            categories: [{ id: 1, name: "Produk UMKM" }],
+            weight: item.meta?._weight || "",
+            dimensions: { 
+              length: item.meta?._length || "", 
+              width: item.meta?._width || "", 
+              height: item.meta?._height || "" 
+            },
+            stock_status: item.meta?._stock_status === "outofstock" ? "outofstock" : "instock"
           };
         }
       }
     } catch (err) {
-      console.error("Gagal melakukan fallback fetch CPT UMKM WordPress:", err);
+      console.error("Gagal melakukan fallback fetch WooCommerce Product:", err);
     }
   }
 
-  // Jika setelah semua pengecekan produk tetap tidak ditemukan
   if (!product) return notFound();
 
   const isSale = Boolean(product.sale_price && product.regular_price);
@@ -122,7 +124,6 @@ export default async function UMKMDetailPage({ params }: PageProps) {
         {/* KOLOM KIRI: FOTO UTAMA, KATEGORI & DESKRIPSI */}
         <div className="lg:col-span-2 space-y-6">
           
-          {/* Tombol Navigasi Langsung ke Katalog UMKM */}
           <div className="flex justify-start">
             <Link 
               href="/umkm"
@@ -139,9 +140,6 @@ export default async function UMKMDetailPage({ params }: PageProps) {
                   src={product.images[0].src} 
                   alt={product.name}
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLElement).style.display = 'none';
-                  }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center text-neutral-400 text-xs italic">
@@ -158,9 +156,6 @@ export default async function UMKMDetailPage({ params }: PageProps) {
                       src={img.src} 
                       alt={img.name || product.name} 
                       className="w-full h-full object-cover hover:scale-105 transition duration-300"
-                      onError={(e) => {
-                        (e.target as HTMLElement).style.display = 'none';
-                      }}
                     />
                   </div>
                 ))}
@@ -236,7 +231,6 @@ export default async function UMKMDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* INTEGRASI SINKRON DENGAN CLIENT ORDER FORM */}
             <ClientOrderForm 
               product={{
                 id: product.id,
