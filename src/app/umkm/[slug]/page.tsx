@@ -45,6 +45,7 @@ interface PageProps {
 }
 
 export default async function UMKMDetailPage({ params }: PageProps) {
+  // Unwrap params untuk Next.js 15+
   const resolvedParams = await params;
   const slug = resolvedParams?.slug;
 
@@ -77,7 +78,6 @@ export default async function UMKMDetailPage({ params }: PageProps) {
           const item = wpData[0];
           const imgUrl = item._embedded?.['wp:featuredmedia']?.[0]?.source_url || "";
 
-          // Ambil harga dari meta / WooCommerce bawaan
           const rawPrice = item.meta?._price || item.meta?._regular_price || item.price || "0";
 
           product = {
@@ -108,7 +108,7 @@ export default async function UMKMDetailPage({ params }: PageProps) {
 
   if (!product) return notFound();
 
-  // Konversi angka harga aman
+  // Konversi angka harga secara aman
   const numericPrice = Number(
     product.price && product.price !== "" 
       ? product.price 
@@ -243,7 +243,7 @@ export default async function UMKMDetailPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* HARGA SUDAH DI-PASS DENGAN ANGKA VALIID */}
+            {/* PASSING NUMERIC PRICE SECARA PRESISI */}
             <ClientOrderForm 
               product={{
                 id: product.id,

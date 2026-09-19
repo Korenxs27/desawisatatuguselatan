@@ -83,7 +83,10 @@ export default function ClientOrderForm({
   const [invoiceData, setInvoiceData] = useState<OrderResultData | null>(null);
 
   const baseUrl = "/api-wp";
-  const totalPrice = (product?.price || 0) * quantity;
+  
+  // PARSING HARGA AMAN: Mencegah NaN atau 0
+  const unitPrice = Number(product?.price) || 0;
+  const totalPrice = unitPrice * quantity;
 
   useEffect(() => {
     setMounted(true);
@@ -453,7 +456,7 @@ Mohon verifikasinya, terima kasih!`;
         <div className="bg-neutral-50 p-4 rounded-2xl border border-neutral-100 text-xs text-neutral-500 space-y-1.5">
           <div className="flex justify-between">
             <span>Harga Satuan</span>
-            <span>Rp {(product?.price || 0).toLocaleString("id-ID")}</span>
+            <span>Rp {unitPrice.toLocaleString("id-ID")}</span>
           </div>
           <div className="flex justify-between">
             <span>Jumlah Item</span>
@@ -627,7 +630,7 @@ Mohon verifikasinya, terima kasih!`;
                     <tr>
                       <td className="p-2.5 font-medium">1</td>
                       <td className="p-2.5 font-bold text-neutral-900">{invoiceData.product_name}</td>
-                      <td className="p-2.5 text-center text-neutral-600">Rp {(invoiceData.total / (invoiceData.quantity || 1)).toLocaleString("id-ID")}</td>
+                      <td className="p-2.5 text-center text-neutral-600">Rp {unitPrice.toLocaleString("id-ID")}</td>
                       <td className="p-2.5 text-center text-neutral-600">{invoiceData.quantity} Pcs</td>
                       <td className="p-2.5 text-right font-bold text-neutral-900">Rp {invoiceData.total.toLocaleString("id-ID")}</td>
                     </tr>
