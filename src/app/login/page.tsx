@@ -199,7 +199,7 @@ export default function LoginPage() {
                   type="text"
                   name="username"
                   required
-                  placeholder={isSignUp ? 'Buat username unik' : 'Masukkan username atau email'}
+                  placeholder={isSignUp ? 'Username' : 'Masukkan username atau email'}
                   className="w-full pl-10 pr-4 py-3 text-xs bg-slate-50 border border-slate-200/80 rounded-xl text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition shadow-inner"
                 />
               </div>

@@ -1,74 +1,147 @@
 'use server';
 
-// 1. ACTION FOR SIGN IN (LOKAL)
-export async function loginAction(formData: FormData) {
-  const usernameOrEmail = (formData.get('username') as string || '').trim();
-  const password = (formData.get('password') as string || '').trim();
+const WP_BASE_URL = process.env.NEXT_PUBLIC_WP_URL || 'https://desawisatatuguselatan.desa-wisata-bojongrangkas.com';
 
-  if (!usernameOrEmail || !password) {
-    return { success: false, message: 'Username/Email dan password wajib diisi!' };
+// KREDENSIAL KHUSUS ADMINISTRATOR
+const ADMIN_EMAIL = 'admindesawisatatuguselatan@gmail.com';
+const ADMIN_USERNAME = 'admindesawisatatuguselatan';
+const ADMIN_PASS = 'Desawisatatuguselatan2026';
+
+export async function loginAction(formData: FormData) {
+  const usernameInput = (formData.get('username') as string || '').trim().toLowerCase();
+  const passwordInput = (formData.get('password') as string || '').trim();
+
+  if (!usernameInput || !passwordInput) {
+    return { success: false, message: 'Username/Email dan Password wajib diisi.' };
   }
 
-  // Cek Akun Admin Khusus dengan Password Baru
-  const isAdminAccount = 
-    (usernameOrEmail === 'admin' || 
-     usernameOrEmail === 'admin@desatuguselatan.id' || 
-     usernameOrEmail === 'admindesa') && 
-    password === 'desatuguselatan2026';
-
-  if (isAdminAccount) {
+  // Cek Otentikasi Khusus Administrator Utama (Menggunakan Email, Username 'admin', atau 'admindesawisatatuguselatan')
+  if (
+    (usernameInput === ADMIN_EMAIL || usernameInput === ADMIN_USERNAME || usernameInput === 'admin') && 
+    passwordInput === ADMIN_PASS
+  ) {
     return {
       success: true,
-      token: 'admin-token-' + Date.now(),
-      email: 'admin@desatuguselatan.id',
-      name: 'Administrator BPH',
+      token: 'admin-secret-token-' + Date.now(),
+      name: 'Administrator Tugu Selatan',
+      email: ADMIN_EMAIL,
       role: 'admin',
-      redirectTo: '/admin',
+      redirectTo: '/admin'
     };
   }
 
-  // Jika password salah untuk akun admin, berikan peringatan
-  if (usernameOrEmail === 'admin' || usernameOrEmail === 'admin@desatuguselatan.id') {
-    return { success: false, message: 'Password admin salah!' };
-  }
+  try {
+    // Attempt login via WordPress JWT API untuk User/Pengunjung biasa
+    const res = await fetch(`${WP_BASE_URL}/wp-json/jwt-auth/v1/token`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: usernameInput, password: passwordInput }),
+      cache: 'no-store'
+    });
 
-  // Simulasi Login User Biasa (Untuk akun non-admin lainnya)
-  return {
-    success: true,
-    token: 'user-token-' + Date.now(),
-    email: usernameOrEmail.includes('@') ? usernameOrEmail : `${usernameOrEmail}@user.com`,
-    name: usernameOrEmail,
-    role: 'subscriber',
-    redirectTo: '/user/dashboard',
-  };
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { 
+        success: false, 
+        message: data.message ? data.message.replace(/<[^>]*>?/gm, '') : 'Username atau password salah.' 
+      };
+    }
+
+    const userRoleArr = data.user_role || [];
+    const isAdmin = userRoleArr.includes('administrator') || userRoleArr.includes('admin') || data.user_email === ADMIN_EMAIL;
+
+    return {
+      success: true,
+      token: data.token,
+      name: data.user_display_name || data.user_nicename || usernameInput,
+      email: data.user_email || usernameInput,
+      role: isAdmin ? 'admin' : 'customer',
+      redirectTo: isAdmin ? '/admin' : '/'
+    };
+
+  } catch (error) {
+    console.error('Login Error:', error);
+    return { success: false, message: 'Gagal terhubung ke server. Silakan coba lagi.' };
+  }
 }
 
-// 2. ACTION FOR SIGN UP (LOKAL)
 export async function registerAction(formData: FormData) {
-  const username = (formData.get('username') as string || '').trim();
-  const email = (formData.get('email') as string || '').trim();
-  const password = (formData.get('password') as string || '').trim();
+  const username = formData.get('username') as string;
+  const email = formData.get('email') as string;
+  const password = formData.get('password') as string;
 
   if (!username || !email || !password) {
-    return { success: false, message: 'Semua kolom pendaftaran wajib diisi!' };
+    return { success: false, message: 'Semua kolom wajib diisi.' };
   }
 
-  return { 
-    success: true, 
-    message: 'Registrasi berhasil! Silakan Sign In dengan akun baru Anda.' 
-  };
+  // Mencegah pendaftaran menggunakan email atau username admin
+  if (
+    email.trim().toLowerCase() === ADMIN_EMAIL || 
+    username.trim().toLowerCase() === ADMIN_USERNAME
+  ) {
+    return { success: false, message: 'Email/Username ini dicadangkan khusus untuk Akses Pengelola/Admin.' };
+  }
+
+  try {
+    const res = await fetch(`${WP_BASE_URL}/wp-json/tugu-bridge/v1/register`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, email, password }),
+      cache: 'no-store'
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.success) {
+      return { 
+        success: false, 
+        message: data.message || 'Pendaftaran gagal. Username atau Email mungkin sudah digunakan.' 
+      };
+    }
+
+    return { 
+      success: true, 
+      message: 'Pendaftaran berhasil! Silakan Sign In dengan akun baru Anda.' 
+    };
+
+  } catch (error) {
+    console.error('Register Error:', error);
+    return { success: false, message: 'Terjadi kesalahan koneksi saat mendaftar.' };
+  }
 }
 
-// 3. ACTION FOR FORGOT PASSWORD (LOKAL)
 export async function forgotPasswordAction(formData: FormData) {
-  const email = (formData.get('email') as string || '').trim();
+  const email = formData.get('email') as string;
 
   if (!email) {
-    return { success: false, message: 'Silakan masukkan email akun kamu terlebih dahulu!' };
+    return { success: false, message: 'Email wajib diisi.' };
   }
 
-  return { 
-    success: true, 
-    message: 'Instruksi pemulihan password telah dikirim ke email Anda (Simulasi).' 
-  };
+  try {
+    const res = await fetch(`${WP_BASE_URL}/wp-json/bdpwr/v1/reset-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+      cache: 'no-store'
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return { 
+        success: false, 
+        message: data.message || 'Email tidak ditemukan di sistem kami.' 
+      };
+    }
+
+    return { 
+      success: true, 
+      message: 'Tautan pemulihan password telah dikirimkan ke email Anda.' 
+    };
+
+  } catch (error) {
+    console.error('Forgot Password Error:', error);
+    return { success: false, message: 'Gagal mengirim instruksi reset password.' };
+  }
 }

@@ -1,315 +1,319 @@
 "use client";
 
-import React, { useState, use } from "react";
+import React, { useState, useEffect, use } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Compass, CheckCircle2, ArrowLeft, ShieldCheck, CreditCard } from "lucide-react";
+import Script from "next/script";
+import ClientBookingForm from "../ClientBookingForm";
+import { 
+  ArrowLeft, 
+  CheckCircle2, 
+  Calendar, 
+  Users, 
+  Info, 
+  Images, 
+  ZoomIn, 
+  X, 
+  MapPin 
+} from "lucide-react";
 
 export default function DetailWisataPage({ params }: { params: Promise<{ slug: string }> }) {
   const resolvedParams = use(params);
-  const slug = resolvedParams?.slug;
+  const identifier = resolvedParams?.slug;
   const router = useRouter();
 
-  // Database paket wisata Tugu Selatan dengan URL gambar yang sinkron dengan halaman list
-  const wisataDataMap: Record<string, any> = {
-    "fun-offroad": {
-      title: "Fun Offroad Adventure",
-      category: "Offroad",
-      price: 1000000,
-      unit: "Per Jeep (Maks 4 Orang)",
-      img: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000",
-      desc: "Jelajahi jalur ekstrem pegunungan Tugu Selatan dengan armada Jeep tangguh melintasi area perkebunan teh.",
-      fasilitas: ["Unit Jeep Land Rover / Jimny", "Driver Profesional Berpengalaman", "P3K Standar Keamanan", "Trek Jalur Ekstrem Pilihan", "Air Mineral Gelas"]
-    },
-    "fun-offroad-telaga-saat": {
-      title: "Fun Offroad Telaga Saat",
-      category: "Offroad",
-      price: 1250000,
-      unit: "Per Jeep (Maks 4 Orang)",
-      img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1p4C4yIHClbIGSq3QP07O5YZco1Bm73HUcX88rvXChtCliID6VK2LeoA&s=10",
-      desc: "Petualangan seru offroad menuju titik nol kilometer sumber Ciliwung di Telaga Saat Puncak.",
-      fasilitas: ["Unit Jeep Tangguh", "Driver Sekaligus Guide", "Tiket Masuk & Parkir Telaga Saat", "P3K Standar", "Air Mineral"]
-    },
-    "trekking": {
-      title: "Trekking / Hiking Pegunungan",
-      category: "Trekking",
-      price: 125000,
-      unit: "Per Pax (Minimal 10 Orang)",
-      img: "https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&q=80&w=1000",
-      desc: "Nikmati udara sejuk kebun teh dengan pemandu lokal berpengalaman menyusuri alam asri.",
-      fasilitas: ["Tiket Masuk Kawasan (HTM)", "Tiket Lintas Jalur Kebun Teh", "1 Orang Guide Profesional", "Tracking Pole & Air Mineral"]
-    },
-    "outbound": {
-      title: "Outbound Fun Games",
-      category: "Outbound",
-      price: 125000,
-      unit: "Per Pax (Minimal 20 Orang)",
-      img: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&q=80&w=1000",
-      desc: "Aktivitas kelompok seru di alam terbuka untuk team building instansi, perusahaan, maupun keluarga.",
-      fasilitas: ["Master Game / Fasilitator Profesional", "Peralatan Games & Properti", "Sound System Standar", "Air Mineral & P3K"]
-    },
-    "archery": {
-      title: "Archery / Latihan Memanah",
-      category: "Edukasi & Olahraga",
-      price: 75000,
-      unit: "Per 10 Pax",
-      img: "https://www.banksinarmas.com/id/public/upload/images/67d90ecc06c6f_7-Lokasi-Olahraga-Panahan-di-Jakarta-dan-Sekitarnya-medium.jpg",
-      desc: "Uji fokus dan ketepatan memanah di area terbuka pegunungan yang dikelilingi pemandangan indah.",
-      fasilitas: ["Peralatan Memanah Standar", "Instruktur Profesional", "Target Papan Panahan", "Air Mineral"]
-    },
-    "paintball": {
-      title: "Paintball Simulation Game",
-      category: "Outbound",
-      price: 125000,
-      unit: "Per Pax",
-      img: "https://www.goersapp.com/blog/wp-content/uploads/2025/07/Main-Paintball-di-Jakarta.webp",
-      desc: "Simulasi tempur seru dan taktis di tengah rimbunnya area hutan pinus Tugu Selatan.",
-      fasilitas: ["Semi-Automatic Marker Gun", "40 Peluru Paintball", "Body Protector & Goggles", "Wasit & Fasilitator Game"]
+  const [wisata, setWisata] = useState<any | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeImage, setActiveImage] = useState<string | null>(null);
+
+  const baseUrl = "/api-wp";
+
+  // Lock scroll saat lightbox modal aktif
+  useEffect(() => {
+    if (activeImage) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
     }
-  };
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [activeImage]);
 
-  const wisata = wisataDataMap[slug] || {
-    title: "Paket Wisata Tugu Selatan",
-    category: "Petualangan",
-    price: 100000,
-    unit: "Per Pax",
-    img: "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&q=80&w=1000",
-    desc: "Nikmati pengalaman liburan menarik di kawasan Desa Wisata Tugu Selatan Puncak.",
-    fasilitas: ["Pemandu Lokal", "P3K Standar", "Air Mineral"]
-  };
+  // Fetch data wisata dari WordPress API Tugu Selatan
+  useEffect(() => {
+    async function fetchWisataDetail() {
+      if (!identifier) return;
+      setLoading(true);
 
-  // State untuk E-Ticketing & Booking Form
-  const [ticketCount, setTicketCount] = useState(1);
-  const [includeGuide, setIncludeGuide] = useState(false);
-  const guideFee = 50000;
+      try {
+        const isId = /^\d+$/.test(identifier);
+        const apiUrl = isId 
+          ? `${baseUrl}/wp/v2/wisata/${identifier}?_embed&t=${Date.now()}`
+          : `${baseUrl}/wp/v2/wisata?slug=${identifier}&_embed&t=${Date.now()}`;
 
-  const [bookingStep, setBookingStep] = useState<"form" | "payment" | "success">("form");
-  const [customerName, setCustomerName] = useState("");
-  const [customerPhone, setCustomerPhone] = useState("");
-  const [visitDate, setVisitDate] = useState("2026-06-15");
+        const res = await fetch(apiUrl, { cache: "no-store" });
+        if (res.ok) {
+          const rawData = await res.json();
+          const foundItem = isId 
+            ? (rawData?.id ? rawData : null) 
+            : (Array.isArray(rawData) && rawData.length > 0 ? rawData[0] : null);
 
-  const subtotal = wisata.price * ticketCount;
-  const totalPayment = subtotal + (includeGuide ? guideFee : 0);
-
-  const handleProceedToPayment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!customerName || !customerPhone) {
-      alert("Mohon isi Nama Lengkap dan Nomor WhatsApp terlebih dahulu.");
-      return;
+          setWisata(foundItem);
+        } else {
+          setWisata(null);
+        }
+      } catch (err) {
+        console.error("Gagal memuat detail wisata WordPress:", err);
+        setWisata(null);
+      } finally {
+        setLoading(false);
+      }
     }
-    setBookingStep("payment");
-  };
 
-  const handleCompletePayment = (method: string) => {
-    setBookingStep("success");
-  };
+    fetchWisataDetail();
+  }, [identifier]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+          <div className="w-4 h-4 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+          Memuat detail wisata Tugu Selatan...
+        </div>
+      </div>
+    );
+  }
+
+  if (!wisata) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 text-center space-y-4">
+        <span className="text-4xl">🏔️</span>
+        <h2 className="text-lg font-bold text-slate-800">Wisata Tidak Ditemukan</h2>
+        <p className="text-xs text-slate-500 max-w-sm">
+          Maaf, destinasi atau paket wisata yang Anda cari tidak tersedia di sistem Tugu Selatan.
+        </p>
+        <button 
+          onClick={() => router.back()} 
+          className="px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold transition hover:bg-emerald-800"
+        >
+          &larr; Kembali
+        </button>
+      </div>
+    );
+  }
+
+  // =========================================================
+  // LOGIKA AMAN EXTRACTION DATA WORDPRESS & ACF
+  // =========================================================
+  const title = wisata.title?.rendered || "Paket Wisata";
+  
+  // 1. DESKRIPSI (Ambil dari Content, Excerpt, atau ACF Deskripsi)
+  const acf = wisata.acf || {};
+  const contentHtml = wisata.content?.rendered || wisata.excerpt?.rendered || acf.deskripsi_singkat || acf.deskripsi || "";
+
+  // 2. GAMBAR UTAMA (Ambil dari Featured Image WP, ACF 'foto_utama', atau Placeholder)
+  const mediaEmbed = wisata._embedded?.["wp:featuredmedia"]?.[0]?.source_url;
+  const acfMainImg = typeof acf.foto_utama === 'string' ? acf.foto_utama : acf.foto_utama?.url;
+  const mainImage = mediaEmbed || acfMainImg || acf.gambar_utama || "https://desawisatatuguselatan.desa-wisata-bojongrangkas.com/wp-content/uploads/2026/placeholder.jpg";
+
+  // 3. HARGA, DURASI, MIN PESERTA & KATEGORI
+  const price = Number(acf.harga || acf.harga_minimal || acf.tarif || 0);
+  const durasi = acf.durasi || acf.durasi_paket || acf.lama_kunjungan || "1 Hari";
+  const minPeserta = Number(acf.minimal_peserta || acf.min_peserta || 1);
+  const category = acf.kategori || acf.category || "Destinasi Alam";
+  const productId = Number(acf.produk_woocommerce_terkait || wisata.id || 0);
+
+  // 4. PARSING FASILITAS (Bisa berupa Array of Strings, Array of Objects, atau Text Terpisah Koma)
+  let fasilitasList: string[] = [];
+  const rawFasilitas = acf.fasilitas || acf.fasilitas_paket || acf.fasilitas_wisata;
+
+  if (Array.isArray(rawFasilitas)) {
+    fasilitasList = rawFasilitas.map((item: any) => typeof item === "string" ? item : item.nama_fasilitas || item.fasilitas || item.label || "");
+  } else if (typeof rawFasilitas === "string" && rawFasilitas.trim().length > 0) {
+    fasilitasList = rawFasilitas.split(/[\n,]+/).map((s) => s.trim()).filter(Boolean);
+  }
+
+  // 5. PARSING GALERI FOTO (Bisa Array of Image URLs, Array of Objects ACF Gallery)
+  let galleryList: string[] = [];
+  const rawGallery = acf.gallery_images || acf.gallery_paket || acf.galeri_foto || acf.galeri;
+
+  if (Array.isArray(rawGallery)) {
+    galleryList = rawGallery.map((item: any) => {
+      if (typeof item === "string") return item;
+      return item.url || item.source_url || item.sizes?.large || "";
+    }).filter(Boolean);
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-teal-50/40 pt-16 sm:pt-20 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/20 to-teal-50/30 pt-16 sm:pt-20 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
       
-      {/* Background Soft Glow Effects */}
-      <div className="absolute top-0 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
-      <div className="absolute bottom-10 right-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-teal-300/20 rounded-full blur-3xl pointer-events-none"></div>
+      {/* Midtrans Snap Client SDK */}
+      <Script 
+        src="https://app.midtrans.com/snap/snap.js" 
+        data-client-key="Mid-client-q343rAbCQUljWRLn" 
+        strategy="afterInteractive" 
+      />
 
-      <div className="max-w-6xl mx-auto space-y-8 sm:space-y-12 relative z-10">
+      {/* POPUP LIGHTBOX FOTO MODAL */}
+      {activeImage && (
+        <div 
+          className="fixed inset-0 z-[99999] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setActiveImage(null)}
+        >
+          <button 
+            onClick={() => setActiveImage(null)}
+            className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 text-white rounded-full transition cursor-pointer"
+          >
+            <X size={20} />
+          </button>
+          <div className="relative w-full max-w-5xl h-[85vh]">
+            <Image 
+              src={activeImage} 
+              alt="Preview Penuh" 
+              fill 
+              className="object-contain rounded-2xl" 
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Background Soft Glow */}
+      <div className="absolute top-0 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-emerald-300/20 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div className="max-w-6xl mx-auto space-y-6 sm:space-y-8 relative z-10">
         
         {/* Tombol Kembali */}
         <div>
           <button 
             onClick={() => router.back()} 
-            className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 bg-white/80 backdrop-blur-md border border-slate-200 px-4 py-2 rounded-full hover:bg-slate-100 transition shadow-sm cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 bg-white/90 backdrop-blur-md border border-slate-200/80 px-4 py-2 rounded-full hover:bg-slate-100 transition shadow-sm cursor-pointer"
           >
             <ArrowLeft size={14} /> Kembali
           </button>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 sm:gap-10 items-start">
           
-          {/* KOLOM KIRI & TENGAH: INFORMASI DETAIL WISATA */}
-          <div className="lg:col-span-2 space-y-6 sm:space-y-8">
-            <div className="relative aspect-[16/10] w-full rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-100 border border-slate-200 shadow-xl">
-              <img 
-                src={wisata.img} 
-                alt={wisata.title} 
-                className="w-full h-full object-cover" 
+          {/* KOLOM KIRI: DOKUMENTASI & DESKRIPSI LENGKAP */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Banner Utama */}
+            <div 
+              className="relative aspect-[16/10] w-full rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-slate-100 border border-slate-200 shadow-xl cursor-pointer group"
+              onClick={() => setActiveImage(mainImage)}
+            >
+              <Image 
+                src={mainImage} 
+                alt={title} 
+                fill 
+                priority 
+                className="object-cover group-hover:scale-105 transition duration-700" 
               />
-              <span className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-slate-900/80 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl uppercase tracking-wider z-10 shadow">
-                {wisata.category}
+              <span className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-slate-900/80 backdrop-blur-md text-white text-[10px] sm:text-xs font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl uppercase tracking-wider z-10 shadow flex items-center gap-1.5">
+                <MapPin size={12} className="text-emerald-400" /> {category}
               </span>
             </div>
 
-            <div className="bg-white/75 backdrop-blur-xl p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] border border-white/85 shadow-xl shadow-slate-200/50 space-y-6">
-              <div className="space-y-2 sm:space-y-3">
-                <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">{wisata.title}</h1>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-light">{wisata.desc}</p>
-              </div>
+            {/* Informasi Detail */}
+            <div className="bg-white/80 backdrop-blur-xl p-6 sm:p-8 rounded-[2rem] border border-white/85 shadow-xl space-y-6">
+              <div className="space-y-3">
+                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
+                  {title}
+                </h1>
 
-              <div className="border-t border-slate-200/85 pt-6 space-y-3 sm:space-y-4">
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900 uppercase tracking-wider">Fasilitas Termasuk:</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
-                  {wisata.fasilitas.map((fasilitas: string, idx: number) => (
-                    <div key={idx} className="flex items-center gap-2.5 text-xs text-slate-700 bg-slate-50/80 p-3 rounded-2xl border border-slate-200/60 font-medium">
-                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
-                      <span>{fasilitas}</span>
-                    </div>
-                  ))}
+                <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600 pt-1 border-t border-slate-100">
+                  <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3 py-1 rounded-lg border border-emerald-100">
+                    <Calendar size={14} className="text-emerald-600" /> Durasi: {durasi}
+                  </span>
+                  <span className="flex items-center gap-1.5 bg-emerald-50 text-emerald-800 px-3 py-1 rounded-lg border border-emerald-100">
+                    <Users size={14} className="text-emerald-600" /> Min. Rombongan: {minPeserta} Orang
+                  </span>
                 </div>
               </div>
+
+              {/* Deskripsi dari WordPress */}
+              <div className="border-t border-slate-100 pt-5 space-y-3">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                  <Info size={14} className="text-emerald-600" /> Detail Pengalaman & Informasi
+                </h3>
+
+                {contentHtml ? (
+                  <div 
+                    className="prose prose-slate text-xs text-slate-600 leading-relaxed max-w-none prose-p:mb-3 prose-strong:text-slate-900 prose-ul:list-disc prose-ul:pl-4"
+                    dangerouslySetInnerHTML={{ __html: contentHtml }}
+                  />
+                ) : (
+                  <p className="text-xs text-slate-400 italic">Informasi detail mengenai destinasi ini belum ditambahkan.</p>
+                )}
+              </div>
+
+              {/* Fasilitas */}
+              {fasilitasList.length > 0 && (
+                <div className="border-t border-slate-100 pt-5 space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                    <CheckCircle2 size={14} className="text-emerald-600" /> Fasilitas Termasuk
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    {fasilitasList.map((item: string, idx: number) => (
+                      <div key={idx} className="flex items-center gap-2 text-xs text-slate-700 bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 font-medium">
+                        <CheckCircle2 size={15} className="text-emerald-600 shrink-0" />
+                        <span>{item}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Galeri Foto Tambahan */}
+              {galleryList.length > 0 && (
+                <div className="border-t border-slate-100 pt-5 space-y-3">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5">
+                    <Images size={14} className="text-emerald-600" /> Galeri Foto ({galleryList.length})
+                  </h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {galleryList.map((imgUrl: string, idx: number) => (
+                      <div 
+                        key={idx} 
+                        onClick={() => setActiveImage(imgUrl)}
+                        className="relative aspect-[4/3] rounded-xl overflow-hidden bg-slate-100 border border-slate-200 cursor-pointer group shadow-sm hover:shadow-md transition"
+                      >
+                        <Image src={imgUrl} alt={`Galeri ${idx + 1}`} fill className="object-cover group-hover:scale-105 transition duration-500" />
+                        <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white">
+                          <ZoomIn size={18} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
 
-          {/* KOLOM KANAN: MODUL E-TICKETING & BOOKING INTERAKTIF */}
-          <div className="lg:col-span-1">
-            <div className="bg-white/90 backdrop-blur-2xl border border-slate-200/90 rounded-[2rem] sm:rounded-[2.5rem] p-5 sm:p-8 shadow-2xl lg:sticky lg:top-28 space-y-6">
+          {/* KOLOM KANAN: FORM RESERVASI / E-TICKETING */}
+          <div className="lg:col-span-1 lg:sticky lg:top-24">
+            <div className="bg-white/90 backdrop-blur-2xl border border-slate-200/90 rounded-[2rem] p-6 shadow-2xl space-y-5">
               
-              <div className="border-b border-slate-200 pb-4">
-                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest block">Tarif Resmi</span>
-                <div className="flex items-baseline gap-1 mt-1 flex-wrap">
-                  <span className="text-xl sm:text-2xl font-extrabold text-emerald-600">Rp. {wisata.price.toLocaleString("id-ID")}</span>
-                  <span className="text-xs text-slate-500 font-medium">{wisata.unit}</span>
+              <div className="border-b border-slate-100 pb-3">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Tarif Kunjungan</span>
+                <div className="flex items-baseline gap-1 mt-0.5">
+                  <span className="text-2xl font-black text-emerald-600">
+                    {price > 0 ? `Rp ${price.toLocaleString("id-ID")}` : "Gratis / Terbuka"}
+                  </span>
+                  <span className="text-xs text-slate-500 font-medium">/ Orang</span>
                 </div>
               </div>
 
-              {/* STEP 1: FORM BOOKING */}
-              {bookingStep === "form" && (
-                <form onSubmit={handleProceedToPayment} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nama Lengkap Pemesan</label>
-                    <input 
-                      type="text" 
-                      required
-                      placeholder="Cth: Budi Santoso"
-                      value={customerName}
-                      onChange={(e) => setCustomerName(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs text-slate-800 outline-none focus:border-emerald-600 font-medium shadow-inner" 
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Nomor WhatsApp</label>
-                    <input 
-                      type="tel" 
-                      required
-                      placeholder="Cth: 08123456789"
-                      value={customerPhone}
-                      onChange={(e) => setCustomerPhone(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-3 text-xs text-slate-800 outline-none focus:border-emerald-600 font-medium shadow-inner" 
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Tanggal</label>
-                      <input 
-                        type="date" 
-                        value={visitDate}
-                        onChange={(e) => setVisitDate(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-xs text-slate-800 outline-none font-medium shadow-inner" 
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">Jumlah Unit</label>
-                      <input 
-                        type="number" 
-                        min="1" 
-                        value={ticketCount} 
-                        onChange={(e) => setTicketCount(Math.max(1, parseInt(e.target.value) || 1))} 
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-3 py-3 text-xs text-slate-800 outline-none font-medium shadow-inner" 
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-100">
-                    <div>
-                      <h4 className="text-xs font-bold text-slate-900">Pemandu Lokal</h4>
-                      <p className="text-[10px] text-slate-500 font-light">+Rp 50.000</p>
-                    </div>
-                    <input type="checkbox" checked={includeGuide} onChange={(e) => setIncludeGuide(e.target.checked)} className="w-4 h-4 accent-emerald-600 cursor-pointer rounded" />
-                  </div>
-
-                  <div className="bg-[#0f172a] text-white p-4 rounded-2xl space-y-1.5 shadow-md">
-                    <div className="flex justify-between text-xs text-slate-300">
-                      <span>Subtotal:</span>
-                      <span>Rp {subtotal.toLocaleString("id-ID")}</span>
-                    </div>
-                    {includeGuide && (
-                      <div className="flex justify-between text-xs text-slate-300">
-                        <span>Pemandu:</span>
-                        <span>Rp {guideFee.toLocaleString("id-ID")}</span>
-                      </div>
-                    )}
-                    <div className="flex justify-between border-t border-slate-800 pt-2 text-sm font-bold">
-                      <span>Total Tagihan:</span>
-                      <span className="text-emerald-400">Rp {totalPayment.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
-
-                  <button type="submit" className="w-full bg-[#0f172a] hover:bg-emerald-900 text-white py-3.5 rounded-2xl text-xs font-bold tracking-wide transition shadow-xl flex items-center justify-center gap-2 cursor-pointer">
-                    <CreditCard size={16} /> Lanjut ke Pembayaran &rarr;
-                  </button>
-                </form>
-              )}
-
-              {/* STEP 2: PEMBAYARAN */}
-              {bookingStep === "payment" && (
-                <div className="space-y-4 animate-in fade-in">
-                  <div className="bg-slate-50 border border-slate-200 p-4 rounded-2xl text-left space-y-2">
-                    <h3 className="text-xs font-bold text-slate-900 border-b border-slate-200 pb-2">Konfirmasi Pemesan</h3>
-                    <p className="text-[11px] text-slate-600">Nama: <strong className="text-slate-900">{customerName}</strong></p>
-                    <p className="text-[11px] text-slate-600">WhatsApp: <strong className="text-slate-900">{customerPhone}</strong></p>
-                    <div className="pt-2 border-t border-slate-200 flex justify-between text-xs font-bold">
-                      <span>Total Tagihan:</span>
-                      <span className="text-emerald-600">Rp {totalPayment.toLocaleString("id-ID")}</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 text-left">
-                    <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider">Metode Pembayaran</label>
-                    <div className="grid grid-cols-1 gap-2">
-                      <button onClick={() => handleCompletePayment("QRIS")} className="p-3 rounded-xl border border-slate-200 hover:border-emerald-600 bg-white font-bold text-xs text-slate-800 text-left transition shadow-sm flex items-center justify-between cursor-pointer">
-                        <span>📱 QRIS Instant</span> <span className="text-[10px] text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">Bebas Biaya</span>
-                      </button>
-                      <button onClick={() => handleCompletePayment("Transfer Bank")} className="p-3 rounded-xl border border-slate-200 hover:border-emerald-600 bg-white font-bold text-xs text-slate-800 text-left transition shadow-sm flex items-center justify-between cursor-pointer">
-                        <span>🏦 Transfer Bank (BCA/BRI)</span>
-                      </button>
-                      <button onClick={() => handleCompletePayment("E-Wallet")} className="p-3 rounded-xl border border-slate-200 hover:border-emerald-600 bg-white font-bold text-xs text-slate-800 text-left transition shadow-sm flex items-center justify-between cursor-pointer">
-                        <span>💳 E-Wallet (OVO / GoPay)</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  <button onClick={() => setBookingStep("form")} className="w-full py-2.5 text-xs font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition cursor-pointer">
-                    &larr; Ubah Data Pesanan
-                  </button>
-                </div>
-              )}
-
-              {/* STEP 3: SUKSES (E-TICKET CETAK) */}
-              {bookingStep === "success" && (
-                <div className="space-y-4 text-center animate-in fade-in py-2">
-                  <div className="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner">
-                    <ShieldCheck size={24} />
-                  </div>
-                  <div className="space-y-1">
-                    <h3 className="text-lg font-bold text-slate-900">Pembayaran Lunas!</h3>
-                    <p className="text-[11px] text-slate-500">
-                      E-Ticket resmi telah dikirim ke WhatsApp <strong className="text-slate-800">{customerPhone}</strong>.
-                    </p>
-                  </div>
-
-                  <div className="bg-slate-900 text-white p-4 rounded-2xl text-left space-y-1 text-[11px] shadow-lg">
-                    <p className="text-emerald-400 font-bold border-b border-slate-800 pb-1.5">🎟️ KODE: #TS-2026-99X</p>
-                    <p>Wisata: <strong>{wisata.title}</strong></p>
-                    <p>Pemesan: <strong>{customerName}</strong></p>
-                    <p>Tanggal: <strong>{visitDate}</strong></p>
-                    <p>Total Lunas: <strong className="text-emerald-400">Rp {totalPayment.toLocaleString("id-ID")}</strong></p>
-                  </div>
-
-                  <button onClick={() => setBookingStep("form")} className="w-full bg-[#0f172a] hover:bg-emerald-900 text-white py-3 rounded-xl text-xs font-bold shadow-md cursor-pointer">
-                    Pesan Tiket Lainnya
-                  </button>
-                </div>
-              )}
+              {/* Client Booking Form */}
+              <ClientBookingForm 
+                productId={productId} 
+                productName={title} 
+                productPrice={price} 
+                minPeserta={minPeserta}
+                diskonMinimalPeserta={Number(acf.diskon_minimal_peserta || 0)}
+                diskonNominal={Number(acf.diskon_nominal || 0)}
+              />
 
             </div>
           </div>

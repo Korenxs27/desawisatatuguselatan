@@ -4,26 +4,20 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'www.banksinarmas.com',
+        protocol: "https",
+        hostname: "desawisatatuguselatan.desa-wisata-bojongrangkas.com",
+        port: "",
+        pathname: "/wp-content/uploads/**",
       },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com', // untuk unsplash jika dipakai juga
-      },
-      {
-        protocol: 'https',
-        hostname: 'www.goersapp.com', 
-      },
-      {
-        protocol: 'https',
-        hostname: 'encrypted-tbn0.gstatic.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'smexpo.pertamina.com',
-      }
     ],
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api-wp/:path*",
+        destination: "https://desawisatatuguselatan.desa-wisata-bojongrangkas.com/wp-json/:path*",
+      },
+    ];
   },
 };
 

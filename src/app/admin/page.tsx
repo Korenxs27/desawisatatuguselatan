@@ -1,401 +1,701 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import toast, { Toaster } from 'react-hot-toast';
 import { 
   LayoutDashboard, 
   Compass, 
   ShoppingBag, 
-  MessageSquare, 
   Camera, 
-  ClipboardList, 
+  MessageSquare, 
   FileText, 
   LogOut, 
-  Plus, 
-  Trash2, 
-  Edit3, 
-  ShieldCheck, 
-  Menu, 
+  ExternalLink,
+  RefreshCw,
+  CreditCard,
+  CheckCircle,
+  Clock,
+  Eye,
   X,
-  Save,
-  CheckCircle2,
-  ArrowRight
+  Menu,
+  CheckCheck,
+  Search,
+  ChevronDown,
+  ChevronUp,
+  Edit3,
+  User,
+  Phone,
+  Mail,
+  Calendar,
+  Users,
+  Tag,
+  MapPin
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
-  type ActiveTab = 'overview' | 'cms-beranda' | 'cms-profil' | 'wisata' | 'umkm' | 'gallery';
-  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
+  const router = useRouter();
   
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [adminName, setAdminName] = useState('Administrator BPH');
-  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [adminName, setAdminName] = useState("Administrator BPH");
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+  
+  // State Modal Detail Booking / Order
+  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+
+  // State Filter & Pagination
+  const [messageSearch, setMessageSearch] = useState("");
+  const [showAllMessages, setShowAllMessages] = useState(false);
+  const [showAllOrders, setShowAllOrders] = useState(false);
+  
+  // State Statistik & Data WordPress
+  const [stats, setStats] = useState({
+    totalGallery: 0,
+    totalOrders: 0,
+    revenue: 0,
+  });
+
+  const [orders, setOrders] = useState<any[]>([]);
+  const [messages, setMessages] = useState<any[]>([]);
+
+  // Jalur proxy Next.js ke REST API WordPress
+  const wpUrl = "/api-wp/tugu-bridge/v1";
 
   useEffect(() => {
-    const name = localStorage.getItem('admin_name');
+    const name = localStorage.getItem("admin_name");
     if (name) setAdminName(name);
+    fetchAllAdminData();
   }, []);
 
-  const handleLogout = () => {
-    localStorage.clear();
-    window.location.href = '/login';
-  };
+  // Fetch Data Komprehensif dari REST API WordPress Plugin
+  const fetchAllAdminData = async () => {
+    setLoading(true);
+    setRefreshing(true);
+    try {
+      // 1. Fetch Orders
+      const resOrders = await fetch(`${wpUrl}/get-orders`, { cache: "no-store" });
+      const dataOrders = await resOrders.json();
+      let ordersData: any[] = [];
+      let realRevenue = 0;
+      
+      if (dataOrders.success && Array.isArray(dataOrders.orders)) {
+        ordersData = dataOrders.orders;
+        realRevenue = ordersData
+          .filter((o: any) => o.status === 'completed' || o.status === 'processing' || o.status === 'paid')
+          .reduce((sum: number, o: any) => sum + Number(o.total || o.total_price || 0), 0);
+      }
 
-  const showNotification = (msg: string) => {
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 3000);
-  };
+      // 2. Fetch Messages / Aspirasi
+      const resMsg = await fetch(`${wpUrl}/get-messages`, { cache: "no-store" });
+      const dataMsg = await resMsg.json();
+      let messagesData = dataMsg.success && Array.isArray(dataMsg.messages) ? dataMsg.messages : [];
 
-  // --- STATE DATA LOKAL ---
-  const [wisataList, setWisataList] = useState([
-    { id: 1, title: "Fun Offroad Adventure", category: "Offroad", price: "Rp 1.000.000", status: "Aktif" },
-    { id: 2, title: "Fun Offroad Telaga Saat", category: "Offroad", price: "Rp 1.250.000", status: "Aktif" },
-    { id: 3, title: "Trekking / Hiking Pegunungan", category: "Trekking", price: "Rp 125.000", status: "Aktif" },
-  ]);
+      // 3. Fetch Gallery
+      const resGallery = await fetch(`${wpUrl}/gallery-items`, { cache: "no-store" });
+      const dataGallery = await resGallery.json();
+      let galleryData = dataGallery.success && Array.isArray(dataGallery.gallery) ? dataGallery.gallery : [];
 
-  const [umkmList, setUmkmList] = useState([
-    { id: 1, title: "Keripik Singkong Pedas Manis", category: "Kuliner", price: "Rp 15.000", stock: "120 Pcs" },
-    { id: 2, title: "Teh Hijau Herbal Organik", category: "Minuman & Herbal", price: "Rp 25.000", stock: "85 Pcs" },
-  ]);
+      setOrders(ordersData);
+      setMessages(messagesData);
 
-  const [galleryList, setGalleryList] = useState([
-    { id: 1, title: "Kawasan Perkebunan Teh Puncak", category: "Alam & Wisata" },
-    { id: 2, title: "Petualangan Fun Offroad Jeep", category: "Petualangan" },
-    { id: 3, title: "Aktivitas Outbound Warga", category: "Ekowisata" },
-  ]);
+      setStats({
+        totalGallery: galleryData.length,
+        totalOrders: ordersData.length,
+        revenue: realRevenue,
+      });
 
-  const [ordersList, setOrdersList] = useState([
-    { id: "TRX-005", customer: "Andi Pratama", item: "Tiket Masuk (5 Pax)", total: "Rp 125.000", status: "Selesai", date: "1 Jul 2026" },
-    { id: "TRX-004", customer: "Siti Aminah", item: "Madu Hutan (2 Botol)", total: "Rp 190.000", status: "Menunggu Konfirmasi", date: "30 Jun 2026" },
-    { id: "TRX-003", customer: "Bambang Irawan", item: "Paket Offroad (4 Pax)", total: "Rp 4.000.000", status: "Sedang Diproses", date: "30 Jun 2026" },
-    { id: "TRX-002", customer: "Dewi Lestari", item: "Keripik (10 Pcs)", total: "Rp 150.000", status: "Selesai", date: "29 Jun 2026" },
-  ]);
-
-  const [messages, setMessages] = useState([
-    { id: 3, name: "Joko Widodo", email: "joko@ri.go.id", message: "Tolong tingkatkan fasilitas parkir di area Telaga Saat.", date: "1 Jul 2026" },
-    { id: 2, name: "Siti Rahma", email: "siti@yahoo.com", message: "Bagaimana cara mendaftarkan produk keripik agar masuk katalog?", date: "25 Jun 2026" },
-    { id: 1, name: "Budi Santoso", email: "budi@gmail.com", message: "Apakah jadwal offroad weekend besok tersedia?", date: "26 Jun 2026" },
-  ]);
-
-  const [berandaContent, setBerandaContent] = useState({
-    heroTitle: "Desa Wisata Tugu Selatan",
-    heroSubtitle: "Pusat pariwisata alam, petualangan offroad, dan produk UMKM unggulan berbasis masyarakat di kawasan Puncak Cisarua.",
-    announcement: "Jadwal Pembersihan Jalur Wisata Telaga Saat dilaksanakan setiap Hari Senin."
-  });
-
-  const [profilContent, setProfilContent] = useState({
-    history: "Desa Tugu Selatan terletak di dataran tinggi kawasan Puncak, Kecamatan Cisarua, Kabupaten Bogor, yang dikenal dengan panorama kebun teh serta titik nol Sungai Ciliwung.",
-    vision: "Terwujudnya Desa Wisata Tugu Selatan yang mandiri, berbudaya, dan menjadi destinasi ekowisata terkemuka di Jawa Barat.",
-    mission: "1. Mengembangkan potensi alam dan budaya lokal.\n2. Memberdayakan ekonomi warga melalui UMKM.\n3. Meningkatkan layanan mitigasi bencana dan sapta pesona."
-  });
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Selesai': return 'bg-emerald-50 text-emerald-700';
-      case 'Sedang Diproses': return 'bg-sky-50 text-sky-700';
-      case 'Menunggu Konfirmasi': return 'bg-amber-50 text-amber-700';
-      default: return 'bg-slate-100 text-slate-700';
+    } catch (err) {
+      console.error("Gagal sinkronisasi data dari WordPress:", err);
+      toast.error("Gagal terhubung ke server WordPress Tugu Selatan.");
+    } finally {
+      setLoading(false);
+      setTimeout(() => setRefreshing(false), 500);
     }
   };
 
+  // Handler Konfirmasi Pesanan WooCommerce / Custom CPT (Paid)
+  const handleMarkAsPaid = async (orderId: number) => {
+    setUpdatingStatus(true);
+    const loadingToast = toast.loading("Memperbarui status pembayaran ke server...", {
+      style: { borderRadius: '16px', background: '#334155', color: '#fff', fontSize: '12px' }
+    });
+
+    try {
+      const res = await fetch(`${wpUrl}/update-order-status`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ order_id: orderId, status: "processing" })
+      });
+      
+      const data = await res.json();
+      toast.dismiss(loadingToast);
+
+      if (res.ok && data.success) {
+        toast.success(`Pesanan #${orderId} berhasil dikonfirmasi Lunas!`, {
+          style: { borderRadius: '16px', background: '#065f46', color: '#fff', fontSize: '12px' },
+          iconTheme: { primary: '#34d399', secondary: '#065f46' }
+        });
+        setSelectedOrder(null);
+        fetchAllAdminData();
+      } else {
+        toast.error(`Gagal memperbarui status pesanan.`, { style: { borderRadius: '16px', fontSize: '12px' } });
+      }
+    } catch (err) {
+      toast.dismiss(loadingToast);
+      toast.error("Terjadi kesalahan jaringan.", { style: { borderRadius: '16px', fontSize: '12px' } });
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.clear();
+    router.push("/login");
+  };
+
+  const filteredMessages = messages.filter((msg) => {
+    const query = messageSearch.toLowerCase();
+    return msg.nama?.toLowerCase().includes(query) || msg.pesan?.toLowerCase().includes(query);
+  });
+
+  const displayedMessages = showAllMessages ? filteredMessages : filteredMessages.slice(0, 5);
+  const displayedOrders = showAllOrders ? orders : orders.slice(0, 5);
+
   const navItems = [
-    { name: 'Overview', tab: 'overview', icon: LayoutDashboard },
-    { name: 'Edit Beranda', tab: 'cms-beranda', icon: Edit3 },
-    { name: 'Edit Profil', tab: 'cms-profil', icon: FileText },
-    { name: 'Kelola Wisata', tab: 'wisata', icon: Compass },
-    { name: 'Kelola UMKM', tab: 'umkm', icon: ShoppingBag },
-    { name: 'Kelola Galeri Foto', tab: 'gallery', icon: Camera },
+    { name: 'Dashboard Overview', href: '/admin', icon: LayoutDashboard, active: true },
+    { name: 'Edit Beranda', href: '/admin/beranda', icon: Edit3, active: false },
+    { name: 'Edit Profil Desa', href: '/admin/profil', icon: FileText, active: false },
+    { name: 'Kelola Wisata', href: '/admin/wisata', icon: Compass, active: false },
+    { name: 'Kelola UMKM', href: '/admin/umkm', icon: ShoppingBag, active: false },
+    { name: 'Kelola Galeri Foto', href: '/admin/gallery', icon: Camera, active: false },
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 flex font-sans text-slate-800 relative overflow-x-hidden">
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/20 to-slate-100 flex flex-col md:flex-row text-slate-800 font-sans relative ${isMobileSidebarOpen ? 'overflow-hidden h-screen' : ''}`}>
       
-      {/* SIDEBAR MOBILE OVERLAY */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-slate-950/50 backdrop-blur-sm z-40 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        ></div>
-      )}
+      <Toaster position="top-right" reverseOrder={false} />
 
-      {/* SIDEBAR */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-slate-100 p-5 sm:p-6 flex flex-col justify-between transition-transform duration-300 md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="space-y-6 overflow-y-auto max-h-[calc(100vh-120px)] pr-1">
-          
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full overflow-hidden flex items-center justify-center bg-white border border-emerald-100 shadow-sm shrink-0">
-                <img src="/images/logo tugu selatan.jpg" alt="Logo" className="w-full h-full object-cover" />
-              </div>
-              <div>
-                <h1 className="text-sm font-extrabold text-slate-900 tracking-tight">Admin Panel</h1>
-                <p className="text-[10px] text-emerald-600 font-semibold uppercase tracking-wider">Tugu Selatan</p>
-              </div>
+      {/* SIDEBAR DESKTOP */}
+      <aside className="hidden md:flex w-64 bg-white/85 backdrop-blur-xl border-r border-slate-200/85 flex-col justify-between p-5 fixed h-full z-40 shadow-sm">
+        <div>
+          <div className="pb-6 mb-6 border-b border-slate-100 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold flex items-center justify-center text-sm shadow-md shadow-emerald-500/20">
+              TS
             </div>
-            <button onClick={() => setSidebarOpen(false)} className="md:hidden p-2 rounded-xl bg-slate-100 text-slate-500 hover:text-slate-800 cursor-pointer">
-              <X size={18} />
-            </button>
+            <div>
+              <h2 className="font-bold text-slate-900 text-sm leading-tight">Admin BPH</h2>
+              <p className="text-[11px] text-emerald-600 font-medium">Tugu Selatan</p>
+            </div>
           </div>
 
-          <nav className="space-y-1.5">
+          <nav className="space-y-1.5 text-xs font-semibold">
             {navItems.map((item) => {
               const Icon = item.icon;
               return (
-                <button
-                  key={item.name}
-                  onClick={() => { setActiveTab(item.tab as ActiveTab); setSidebarOpen(false); }}
-                  className={`w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl text-xs font-bold transition cursor-pointer ${activeTab === item.tab ? 'bg-[#0f172a] text-white shadow-md' : 'text-slate-600 hover:bg-slate-100'}`}
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition ${item.active ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`}
                 >
-                  <Icon size={18} /> {item.name}
-                </button>
+                  <Icon size={16} /> {item.name}
+                </Link>
               );
             })}
           </nav>
         </div>
 
         <div className="pt-4 border-t border-slate-100 space-y-3">
-          <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100">
-            <div className="flex items-center gap-3">
-              <ShieldCheck size={20} className="text-emerald-600 shrink-0" />
-              <div className="overflow-hidden">
-                <p className="text-xs font-bold text-slate-800 truncate">{adminName}</p>
-                <p className="text-[10px] text-slate-500">Pengelola Desa</p>
-              </div>
-            </div>
+          <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+            <p className="text-[11px] font-bold text-slate-800 truncate">{adminName}</p>
+            <p className="text-[10px] text-emerald-600">WP Connected</p>
           </div>
-          <button onClick={handleLogout} className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold transition cursor-pointer border border-rose-100">
-            <LogOut size={16} /> Keluar (Logout)
+          <button
+            onClick={handleAdminLogout}
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl text-xs font-semibold transition cursor-pointer"
+          >
+            <LogOut size={15} /> Keluar (Logout)
           </button>
         </div>
       </aside>
 
-      {/* KONTEN UTAMA */}
-      <main className="flex-1 md:ml-72 p-4 sm:p-8 md:p-10 space-y-6 sm:space-y-8 w-full min-w-0">
-        
-        {successMsg && (
-          <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl text-xs font-bold flex items-center gap-2 shadow-sm animate-in fade-in">
-            <CheckCircle2 size={16} /> {successMsg}
-          </div>
-        )}
+      {/* SIDEBAR MOBILE DRAWER */}
+      {isMobileSidebarOpen && (
+        <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
+          <div className="w-72 bg-white fixed inset-y-0 left-0 z-50 shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-left duration-200 overflow-y-auto">
+            <div>
+              <div className="flex justify-between items-center pb-6 mb-6 border-b border-slate-100">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold flex items-center justify-center text-sm shadow-md">
+                    TS
+                  </div>
+                  <div>
+                    <h2 className="font-bold text-slate-900 text-sm leading-tight">Admin BPH</h2>
+                    <p className="text-[11px] text-emerald-600 font-medium">Tugu Selatan</p>
+                  </div>
+                </div>
+                <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition">
+                  <X size={16} />
+                </button>
+              </div>
 
-        {/* Top Header */}
-        <div className="flex items-center justify-between bg-white p-4 sm:p-5 rounded-3xl border border-slate-100 shadow-sm gap-3">
-          <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-            <button onClick={() => setSidebarOpen(true)} className="md:hidden p-2.5 rounded-xl bg-slate-100 text-slate-700 shrink-0 cursor-pointer">
-              <Menu size={18} />
-            </button>
-            <div className="min-w-0">
-              <h2 className="text-base sm:text-xl font-extrabold text-slate-900 tracking-tight truncate">
-                {activeTab === 'overview' && 'Dashboard Overview'}
-                {activeTab === 'cms-beranda' && 'Edit Konten Beranda'}
-                {activeTab === 'cms-profil' && 'Edit Profil Desa'}
-                {activeTab === 'wisata' && 'Manajemen Wisata'}
-                {activeTab === 'umkm' && 'Manajemen UMKM'}
-                {activeTab === 'gallery' && 'Manajemen Galeri'}
-              </h2>
-              <p className="text-[11px] sm:text-xs text-slate-500 font-light truncate">Pusat kontrol administratif Desa Wisata Tugu Selatan.</p>
+              <nav className="space-y-1.5 text-xs font-semibold">
+                {navItems.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setIsMobileSidebarOpen(false)}
+                      className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition ${item.active ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-emerald-50'}`}
+                    >
+                      <Icon size={16} /> {item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
             </div>
+
+            <div className="pt-4 border-t border-slate-100">
+              <button
+                onClick={handleAdminLogout}
+                className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl text-xs font-semibold transition"
+              >
+                <LogOut size={15} /> Keluar (Logout)
+              </button>
+            </div>
+          </div>
+          <div className="flex-1" onClick={() => setIsMobileSidebarOpen(false)} />
+        </div>
+      )}
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 md:ml-64 p-4 sm:p-8 space-y-6 md:space-y-8 w-full">
+        
+        {/* Top Header Bar */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/70 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+          <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
+            <div>
+              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900">Halo, {adminName}</h1>
+              <p className="text-xs text-slate-500 mt-0.5">Pusat kendali pariwisata Desa Wisata Tugu Selatan.</p>
+            </div>
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-2.5 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+            >
+              <Menu size={20} />
+            </button>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
+            <button 
+              onClick={fetchAllAdminData} 
+              className="p-2.5 sm:p-3 text-slate-600 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-sm transition flex items-center gap-2 text-xs font-semibold cursor-pointer"
+            >
+              <RefreshCw size={15} className={refreshing ? "animate-spin text-emerald-600" : ""} />
+              <span className="hidden sm:inline">Sinkronisasi</span>
+            </button>
+            <a 
+              href="https://script.google.com/macros/s/AKfycbyagd9YKHOB9xZ42f3ZgxOLfVMkEYGz06GoQhBqi-ZWp6yQUbIhpElxwevvJ4LJYSCN/exec" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 sm:gap-2 bg-emerald-700 text-white text-xs font-semibold px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl hover:bg-emerald-800 shadow-md transition"
+            >
+              Google Sheets <ExternalLink size={13} />
+            </a>
           </div>
         </div>
 
-        {/* --- 1. OVERVIEW --- */}
-        {activeTab === 'overview' && (
-          <div className="space-y-6 sm:space-y-8">
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Total Wisata</p>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{wisataList.length} Paket</h3>
-                </div>
-                <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0"><Compass size={20} /></div>
-              </div>
-              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Produk UMKM</p>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{umkmList.length} Produk</h3>
-                </div>
-                <div className="w-11 h-11 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0"><ShoppingBag size={20} /></div>
-              </div>
-              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Galeri Foto</p>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{galleryList.length} Item</h3>
-                </div>
-                <div className="w-11 h-11 rounded-2xl bg-teal-50 text-teal-600 flex items-center justify-center shrink-0"><Camera size={20} /></div>
-              </div>
-              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-sm flex items-center justify-between">
-                <div>
-                  <p className="text-[10px] sm:text-[11px] font-bold text-slate-400 uppercase">Pesan Masuk</p>
-                  <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{messages.length} Pesan</h3>
-                </div>
-                <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0"><MessageSquare size={20} /></div>
-              </div>
+        {/* STATS CARDS */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pendapatan</span>
+              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><CreditCard size={18} /></div>
             </div>
-
-            {/* Grid Dua Kolom */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-              
-              {/* Widget Status Pesanan */}
-              <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2"><ClipboardList size={18} className="text-emerald-600"/> Status Pesanan Terbaru</h3>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Real-time update</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {ordersList.slice(0, 3).map(order => (
-                    <div key={order.id} className="py-3 flex justify-between items-center text-xs gap-2">
-                      <div className="min-w-0">
-                        <p className="font-bold text-slate-900 truncate">{order.customer} <span className="font-mono text-[10px] text-slate-400">({order.id})</span></p>
-                        <p className="text-slate-500 font-light truncate">{order.item}</p>
-                      </div>
-                      <span className={`px-2.5 py-1 rounded-lg text-[10px] font-bold shrink-0 ${getStatusColor(order.status)}`}>
-                        {order.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Widget Pesan Warga */}
-              <div className="bg-white p-5 sm:p-6 rounded-3xl border border-slate-100 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs sm:text-sm font-bold text-slate-900 flex items-center gap-2"><MessageSquare size={18} className="text-amber-600"/> Pesan & Aspirasi Warga</h3>
-                  <span className="text-[10px] sm:text-[11px] text-slate-400 font-medium">Aspirasi terbaru</span>
-                </div>
-                <div className="divide-y divide-slate-100">
-                  {messages.slice(0, 3).map(msg => (
-                    <div key={msg.id} className="py-3 space-y-1 text-xs">
-                      <div className="flex justify-between items-center">
-                        <span className="font-bold text-slate-900 truncate">{msg.name}</span>
-                        <span className="text-[10px] text-slate-400 shrink-0">{msg.date}</span>
-                      </div>
-                      <p className="text-slate-600 font-light truncate">{msg.message}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900">Rp {stats.revenue.toLocaleString("id-ID")}</div>
           </div>
-        )}
 
-        {/* --- 2. EDIT BERANDA (CMS) --- */}
-        {activeTab === 'cms-beranda' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-8 space-y-6">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900">Penyuntingan Konten Utama Beranda</h3>
-            <div className="space-y-4 text-xs">
-              <div>
-                <label className="block font-bold text-slate-600 uppercase mb-1">Judul Utama Hero (Hero Title)</label>
-                <input type="text" value={berandaContent.heroTitle} onChange={e => setBerandaContent({ ...berandaContent, heroTitle: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
-              </div>
-              <div>
-                <label className="block font-bold text-slate-600 uppercase mb-1">Subjudul / Deskripsi Singkat</label>
-                <textarea rows={3} value={berandaContent.heroSubtitle} onChange={e => setBerandaContent({ ...berandaContent, heroSubtitle: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
-              </div>
-              <div>
-                <label className="block font-bold text-slate-600 uppercase mb-1">Teks Pengumuman / Banner</label>
-                <input type="text" value={berandaContent.announcement} onChange={e => setBerandaContent({ ...berandaContent, announcement: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
-              </div>
-              <button onClick={() => showNotification("Konten Beranda berhasil disimpan!")} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0f172a] hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer">
-                <Save size={16} /> Simpan Perubahan Beranda
+          <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pesanan</span>
+              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><ShoppingBag size={18} /></div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900">{loading ? "..." : stats.totalOrders} Transaksi</div>
+          </div>
+
+          <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Galeri Foto</span>
+              <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl"><Camera size={18} /></div>
+            </div>
+            <div className="text-xl sm:text-2xl font-black text-slate-900">{loading ? "..." : stats.totalGallery} Media</div>
+          </div>
+        </div>
+
+        {/* TABEL PESANAN TERBARU */}
+        <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+          <div className="flex justify-between items-center mb-6">
+            <div>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">Daftar Pesanan & Status Pembayaran</h2>
+              <p className="text-[11px] sm:text-xs text-slate-500">Transaksi paket wisata dan produk UMKM terbaru.</p>
+            </div>
+            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl">
+              Total: {orders.length}
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-400 uppercase tracking-wider text-[10px]">
+                  <th className="pb-3 font-bold">ID Order</th>
+                  <th className="pb-3 font-bold">Pemesan</th>
+                  <th className="pb-3 font-bold">Total Harga</th>
+                  <th className="pb-3 font-bold">Status</th>
+                  <th className="pb-3 font-bold text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {orders.length === 0 ? (
+                  <tr><td colSpan={5} className="py-8 text-center text-slate-400 italic">Belum ada pesanan masuk.</td></tr>
+                ) : (
+                  displayedOrders.map((order, index) => {
+                    const orderId = order.id || order.order_id;
+                    const name = order.customer_name || order.first_name || order.billing?.first_name || order.nama_pemesan || "Pelanggan";
+                    const price = Number(order.total || order.total_price || 0);
+                    const isPaid = order.status === "completed" || order.status === "processing" || order.status === "paid";
+
+                    return (
+                      <tr key={index} className="hover:bg-slate-50 transition">
+                        <td className="py-4 font-bold text-slate-900">#{orderId}</td>
+                        <td className="py-4 font-semibold text-slate-700">{name}</td>
+                        <td className="py-4 font-bold text-slate-900">Rp {price.toLocaleString("id-ID")}</td>
+                        <td className="py-4">
+                          {isPaid ? (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10px]">
+                              <CheckCircle size={12} /> Paid
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-bold text-[10px]">
+                              <Clock size={12} /> Pending
+                            </span>
+                          )}
+                        </td>
+                        <td className="py-4 text-right">
+                          <button onClick={() => setSelectedOrder(order)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-emerald-600 hover:text-white rounded-xl transition cursor-pointer">
+                            <Eye size={13} /> Detail
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {orders.length > 5 && (
+            <div className="pt-4 text-center border-t border-slate-100 mt-4">
+              <button
+                onClick={() => setShowAllOrders(!showAllOrders)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl text-xs font-bold transition cursor-pointer"
+              >
+                {showAllOrders ? <>Sembunyikan <ChevronUp size={14} /></> : <>Lihat Semua Pesanan ({orders.length - 5} lainnya) <ChevronDown size={14} /></>}
               </button>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
-        {/* --- 3. EDIT PROFIL DESA (CMS) --- */}
-        {activeTab === 'cms-profil' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-8 space-y-6">
-            <h3 className="text-xs sm:text-sm font-bold text-slate-900">Penyuntingan Informasi Profil Desa</h3>
-            <div className="space-y-4 text-xs">
+        {/* KOTAK MASUK PESAN */}
+        <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60 space-y-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl"><MessageSquare size={18} /></div>
               <div>
-                <label className="block font-bold text-slate-600 uppercase mb-1">Sejarah Singkat</label>
-                <textarea rows={3} value={profilContent.history} onChange={e => setProfilContent({ ...profilContent, history: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
+                <h2 className="text-sm sm:text-base font-bold text-slate-900">Kotak Pesan & Aspirasi</h2>
+                <p className="text-[11px] sm:text-xs text-slate-500">Pesan dari pengunjung.</p>
               </div>
-              <div>
-                <label className="block font-bold text-slate-600 uppercase mb-1">Visi Desa Wisata</label>
-                <input type="text" value={profilContent.vision} onChange={e => setProfilContent({ ...profilContent, vision: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
-              </div>
-              <div>
-                <label className="block font-bold text-slate-600 uppercase mb-1">Misi Desa Wisata</label>
-                <textarea rows={4} value={profilContent.mission} onChange={e => setProfilContent({ ...profilContent, mission: e.target.value })} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-slate-800 outline-none focus:border-emerald-600 font-medium" />
-              </div>
-              <button onClick={() => showNotification("Profil Desa berhasil disimpan!")} className="w-full sm:w-auto flex items-center justify-center gap-2 bg-[#0f172a] hover:bg-emerald-900 text-white font-bold px-6 py-3 rounded-xl transition cursor-pointer">
-                <Save size={16} /> Simpan Perubahan Profil
-              </button>
+            </div>
+            
+            <div className="relative w-full sm:w-64">
+              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                <Search size={14} />
+              </span>
+              <input 
+                type="text"
+                placeholder="Cari pesan..."
+                value={messageSearch}
+                onChange={(e) => setMessageSearch(e.target.value)}
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500 transition"
+              />
             </div>
           </div>
-        )}
 
-        {/* --- 4. KELOLA WISATA --- */}
-        {activeTab === 'wisata' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Daftar Destinasi & Aktivitas Wisata</h3>
-              <button onClick={() => { setWisataList([...wisataList, { id: Date.now(), title: "Destinasi Baru", category: "Ekowisata", price: "Rp 75.000", status: "Aktif" }]); showNotification("Wisata ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
-                <Plus size={15} /> Tambah Wisata
-              </button>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {wisataList.map(item => (
-                <div key={item.id} className="py-3.5 flex justify-between items-center text-xs gap-3">
-                  <div className="min-w-0">
-                    <p className="font-bold text-slate-900 truncate">{item.title}</p>
-                    <p className="text-slate-500 truncate">{item.category} • <span className="text-emerald-600 font-semibold">{item.price}</span></p>
-                  </div>
-                  <button onClick={() => { setWisataList(wisataList.filter(w => w.id !== item.id)); showNotification("Wisata dihapus."); }} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer shrink-0"><Trash2 size={14} /></button>
-                </div>
-              ))}
-            </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs whitespace-nowrap sm:whitespace-normal">
+              <thead>
+                <tr className="border-b border-slate-200 text-slate-400 uppercase tracking-wider text-[10px]">
+                  <th className="pb-3 font-bold">Pengirim</th>
+                  <th className="pb-3 font-bold">Pesan</th>
+                  <th className="pb-3 font-bold">Waktu</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {displayedMessages.length === 0 ? (
+                  <tr><td colSpan={3} className="py-8 text-center text-slate-400 italic">Belum ada pesan masuk.</td></tr>
+                ) : (
+                  displayedMessages.map((msg, index) => (
+                    <tr key={index} className="hover:bg-slate-50 transition">
+                      <td className="py-4 font-bold text-slate-900">{msg.nama}</td>
+                      <td className="py-4 text-slate-700 font-medium">{msg.pesan}</td>
+                      <td className="py-4 text-slate-400 text-[11px]">{msg.tanggal}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
 
-        {/* --- 5. KELOLA UMKM --- */}
-        {activeTab === 'umkm' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Katalog Produk UMKM Warga</h3>
-              <button onClick={() => { setUmkmList([...umkmList, { id: Date.now(), title: "Produk Baru", category: "Kuliner", price: "Rp 20.000", stock: "50 Pcs" }]); showNotification("UMKM ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
-                <Plus size={15} /> Tambah Produk
+          {filteredMessages.length > 5 && (
+            <div className="pt-4 text-center border-t border-slate-100 mt-2">
+              <button
+                onClick={() => setShowAllMessages(!showAllMessages)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl text-xs font-bold transition cursor-pointer"
+              >
+                {showAllMessages ? <>Sembunyikan <ChevronUp size={14} /></> : <>Lihat Semua Pesan ({filteredMessages.length - 5} lainnya) <ChevronDown size={14} /></>}
               </button>
             </div>
-            <div className="divide-y divide-slate-100">
-              {umkmList.map(item => (
-                <div key={item.id} className="py-3.5 flex justify-between items-center text-xs gap-3">
-                  <div className="min-w-0">
-                    <p className="font-bold text-slate-900 truncate">{item.title}</p>
-                    <p className="text-slate-500 truncate">{item.category} • Stok: {item.stock} • <span className="text-emerald-600 font-semibold">{item.price}</span></p>
-                  </div>
-                  <button onClick={() => { setUmkmList(umkmList.filter(u => u.id !== item.id)); showNotification("Produk dihapus."); }} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer shrink-0"><Trash2 size={14} /></button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* --- 6. KELOLA GALERI FOTO --- */}
-        {activeTab === 'gallery' && (
-          <div className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5 sm:p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-              <h3 className="text-xs sm:text-sm font-bold text-slate-900">Manajemen Galeri Dokumentasi</h3>
-              <button onClick={() => { setGalleryList([...galleryList, { id: Date.now(), title: "Dokumentasi Baru", category: "Aktivitas" }]); showNotification("Foto galeri ditambahkan!"); }} className="flex items-center gap-1.5 bg-[#0f172a] hover:bg-emerald-900 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition cursor-pointer">
-                <Plus size={15} /> Tambah Foto
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {galleryList.map(item => (
-                <div key={item.id} className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex justify-between items-center text-xs gap-3">
-                  <div className="min-w-0">
-                    <span className="text-[9px] font-bold bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md uppercase">{item.category}</span>
-                    <p className="font-bold text-slate-900 mt-1 truncate">{item.title}</p>
-                  </div>
-                  <button onClick={() => { setGalleryList(galleryList.filter(g => g.id !== item.id)); showNotification("Foto dihapus."); }} className="p-2.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100 cursor-pointer shrink-0"><Trash2 size={14} /></button>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
+        </div>
 
       </main>
+
+      {/* MODAL POP-UP DETAIL ORDER LENGKAP DENGAN DETEKSI UMKM / WISATA */}
+      {selectedOrder && (() => {
+        const orderId = selectedOrder.id || selectedOrder.order_id || "-";
+        
+        const customerName = 
+          selectedOrder.customer_name || 
+          selectedOrder.first_name || 
+          selectedOrder.billing?.first_name || 
+          selectedOrder.nama_pemesan || 
+          "-";
+
+        const customerPhone = 
+          selectedOrder.customer_phone || 
+          selectedOrder.phone || 
+          selectedOrder.billing?.phone || 
+          selectedOrder.no_hp || 
+          selectedOrder.whatsapp || 
+          selectedOrder.meta?.customer_phone || 
+          selectedOrder.meta?.phone || 
+          "-";
+
+        const customerEmail = 
+          selectedOrder.customer_email || 
+          selectedOrder.email || 
+          selectedOrder.billing?.email || 
+          "-";
+
+        const category = selectedOrder.jenis_pesanan || selectedOrder.kategori || "Paket Wisata Tugu Selatan";
+        const productName = selectedOrder.product_name || selectedOrder.nama_paket || selectedOrder.item_name || "Produk Desa";
+        const quantity = Number(selectedOrder.quantity || selectedOrder.jumlah_peserta || 1);
+        const totalPrice = Number(selectedOrder.total || selectedOrder.total_price || 0);
+        const paymentMethod = selectedOrder.payment_name || selectedOrder.payment_method_title || "Transfer Bank / QRIS";
+
+        // Deteksi apakah jenis pesanan adalah Produk UMKM
+        const isUmkm = category.toLowerCase().includes("umkm") || category.toLowerCase().includes("produk");
+
+        // Ambil Alamat Pengiriman (jika UMKM)
+        const customerAddress = 
+          selectedOrder.customer_address || 
+          selectedOrder.address || 
+          selectedOrder.billing?.address_1 || 
+          selectedOrder.meta?.customer_address || 
+          selectedOrder.meta?.address || 
+          "-";
+
+        // Ambil Jadwal Kunjungan (jika Paket Wisata)
+        const visitDate = 
+          selectedOrder.tgl_kunjungan || 
+          selectedOrder.tanggal_kunjungan || 
+          selectedOrder.visit_date || 
+          selectedOrder.meta?.tgl_kunjungan || 
+          selectedOrder.meta?.tanggal_kunjungan || 
+          selectedOrder.billing?.tgl_kunjungan || 
+          "-";
+
+        const buktiUrl = 
+          selectedOrder.bukti_url || 
+          selectedOrder.bukti_transfer || 
+          selectedOrder.meta?.bukti_url || 
+          selectedOrder.meta?.bukti_transfer || 
+          selectedOrder.billing?.bukti_transfer || 
+          null;
+
+        const isPaid = selectedOrder.status === 'paid' || selectedOrder.status === 'completed' || selectedOrder.status === 'processing';
+
+        return (
+          <div onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/70 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+            <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 relative my-auto max-h-[92vh] overflow-y-auto font-sans text-slate-800">
+              
+              {/* Header Modal */}
+              <div className="flex justify-between items-start pb-4 border-b border-slate-100">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-200">
+                      {isUmkm ? "Detail Rincian Pesanan UMKM" : "Detail Rincian Booking"}
+                    </span>
+                    <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border ${
+                      isPaid ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-700 border-amber-200'
+                    }`}>
+                      {isPaid ? 'LUNAS (PAID)' : 'MENUNGGU VERIFIKASI'}
+                    </span>
+                  </div>
+                  <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight">ORDER #{orderId}</h3>
+                </div>
+
+                <button onClick={() => setSelectedOrder(null)} className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition cursor-pointer">
+                  <X size={16} />
+                </button>
+              </div>
+
+              {/* Content Rincian Modal */}
+              <div className="space-y-3 text-xs">
+                
+                {/* Detail Kategori & Nama Produk / Paket */}
+                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold uppercase tracking-wider">
+                    <span className="flex items-center gap-1"><Tag size={13} className="text-emerald-600" /> Kategori</span>
+                    <span className="text-slate-800 font-extrabold">{category}</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-200/60">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">
+                      {isUmkm ? "NAMA PRODUK" : "NAMA PAKET WISATA"}
+                    </span>
+                    <h3 className="text-sm font-extrabold text-slate-900 mt-0.5">{productName}</h3>
+                  </div>
+                </div>
+
+                {/* Grid Informasi Pemesan (Disesuaikan Otomatis Antara UMKM vs Wisata) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <User size={12} className="text-emerald-600" /> Nama Pemesan
+                    </span>
+                    <p className="text-xs font-bold text-slate-800">{customerName}</p>
+                  </div>
+
+                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <Phone size={12} className="text-emerald-600" /> No. HP / WhatsApp
+                    </span>
+                    <p className="text-xs font-bold text-slate-800">{customerPhone}</p>
+                  </div>
+
+                  {/* KONDISIONAL: ALAMAT PENGIRIMAN (UMKM) VS JADWAL KUNJUNGAN (WISATA) */}
+                  {isUmkm ? (
+                    <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <MapPin size={12} className="text-emerald-600" /> Alamat Pengiriman
+                      </span>
+                      <p className="text-xs font-bold text-slate-800 leading-snug">{customerAddress}</p>
+                    </div>
+                  ) : (
+                    <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                        <Calendar size={12} className="text-emerald-600" /> Jadwal Kunjungan
+                      </span>
+                      <p className="text-xs font-extrabold text-emerald-700">{visitDate}</p>
+                    </div>
+                  )}
+
+                  {/* KONDISIONAL: JUMLAH PESANAN (UMKM) VS JUMLAH PESERTA (WISATA) */}
+                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <Users size={12} className="text-emerald-600" /> {isUmkm ? "Jumlah Pesanan" : "Jumlah Peserta"}
+                    </span>
+                    <p className="text-xs font-bold text-slate-800">
+                      {quantity} {isUmkm ? "Pcs / Unit" : "Orang"}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Email & Metode Pembayaran */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <Mail size={12} className="text-emerald-600" /> Email Pemesan
+                    </span>
+                    <p className="text-xs font-medium text-slate-700 truncate">{customerEmail}</p>
+                  </div>
+
+                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                      <CreditCard size={12} className="text-emerald-600" /> Metode Bayar
+                    </span>
+                    <p className="text-xs font-bold text-slate-800">{paymentMethod}</p>
+                  </div>
+                </div>
+
+                {/* Struk / Link Bukti Transfer */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-2">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
+                    <FileText size={12} className="text-emerald-600" /> Link Bukti Transfer
+                  </span>
+                  {buktiUrl ? (
+                    <div className="space-y-2">
+                      <div className="relative w-full max-h-48 rounded-xl overflow-hidden border border-slate-200 bg-white p-1">
+                        <img 
+                          src={buktiUrl} 
+                          alt="Bukti Transfer" 
+                          className="w-full h-full object-contain rounded-lg max-h-44 mx-auto"
+                          onError={(e) => {
+                            (e.target as HTMLElement).style.display = 'none';
+                          }}
+                        />
+                      </div>
+                      <a href={buktiUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 transition w-full">
+                        Buka Bukti Transfer Penuh <ExternalLink size={12} />
+                      </a>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-400 italic">Bukti transfer belum diunggah.</p>
+                  )}
+                </div>
+
+                {/* Total Tagihan */}
+                <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200/80 flex justify-between items-center mt-2">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-emerald-800 block">Total Pembayaran</span>
+                    <span className="text-[11px] text-slate-500 font-medium">
+                      Rp {Math.round(totalPrice / (quantity || 1)).toLocaleString("id-ID")} x {quantity} {isUmkm ? "Pcs" : "Orang"}
+                    </span>
+                  </div>
+                  <span className="text-xl font-black text-emerald-700">
+                    Rp {totalPrice.toLocaleString("id-ID")}
+                  </span>
+                </div>
+
+                {/* Tombol Konfirmasi Pembayaran */}
+                {!isPaid && (
+                  <button 
+                    onClick={() => handleMarkAsPaid(Number(orderId))}
+                    disabled={updatingStatus}
+                    className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold uppercase transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4 shadow-lg"
+                  >
+                    <CheckCheck size={16} /> Konfirmasi Pembayaran (Ubah Jadi Paid)
+                  </button>
+                )}
+
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
     </div>
   );
