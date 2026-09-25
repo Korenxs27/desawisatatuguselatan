@@ -55,7 +55,7 @@ export default function AdminPaketPage() {
   const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
   const [existingGallery, setExistingGallery] = useState<string[]>([]);
 
-  // State Dinamis Repeater Fasilitas Paket Wisata (Icon Ceklis)
+  // State Dinamis Repeater Fasilitas Paket Wisata
   const [fasilitasList, setFasilitasList] = useState<string[]>([
     "Pemandu Wisata Profesional", 
     "Konsumsi / Makan Sesuai Jadwal", 
@@ -69,7 +69,8 @@ export default function AdminPaketPage() {
   const [instruksi, setInstruksi] = useState("");
   const [qrFile, setQrFile] = useState<File | null>(null);
 
-  const baseUrl = "https://desawisatatuguselatan.desa-wisata-bojongrangkas.com/wp-json";
+  // USE RELATIVE PROXY ROUTE TO PREVENT CORS BLOCKS
+  const baseUrl = "/api-wp";
 
   const fetchData = async () => {
     setLoading(true);
@@ -113,7 +114,6 @@ export default function AdminPaketPage() {
       const res = await fetch(`${baseUrl}/tugu-bridge/v1/admin-whatsapp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        // Mengirimkan format ganda (whatsapp_number & phone) agar kompatibel penuh dengan berbagai handler WP
         body: JSON.stringify({ 
           whatsapp_number: adminWhatsApp,
           phone: adminWhatsApp 
@@ -200,7 +200,6 @@ export default function AdminPaketPage() {
     try {
       let uploadedImageUrl = "";
       
-      // 1. Upload foto utama jika ada file baru
       if (imageFile) {
         if (imageFile.size > 10 * 1024 * 1024) {
           toast.dismiss(loadingToast);
@@ -220,7 +219,6 @@ export default function AdminPaketPage() {
         }
       }
 
-      // 2. Upload galeri foto pendukung
       let allGalleryUrls = [...existingGallery];
       if (galleryFiles.length > 0) {
         for (const file of galleryFiles) {
@@ -237,7 +235,6 @@ export default function AdminPaketPage() {
         }
       }
 
-      // 3. Masukkan data ke FormData
       const formData = new FormData();
       if (editingItem) formData.append("item_id", String(editingItem.id));
       
@@ -258,7 +255,6 @@ export default function AdminPaketPage() {
       formData.append("gallery_urls", JSON.stringify(allGalleryUrls));
       formData.append("content", deskripsi);
 
-      // 4. Kirim ke Endpoint WordPress Tugu Selatan
       const res = await fetch(`${baseUrl}/tugu-bridge/v1/upsert-item`, {
         method: "POST",
         body: formData,
