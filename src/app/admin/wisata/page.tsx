@@ -37,7 +37,7 @@ export default function AdminPaketPage() {
   const [isSavingWa, setIsSavingWa] = useState(false);
 
   // State Nomor WhatsApp Konfirmasi Admin
-  const [adminWhatsApp, setAdminWhatsApp] = useState("6281234567890");
+  const [adminWhatsApp, setAdminWhatsApp] = useState("6285781826063");
 
   const [editingItem, setEditingItem] = useState<PaketWisata | null>(null);
 
@@ -87,11 +87,14 @@ export default function AdminPaketPage() {
         setPaymentMethods(dataPay.metode_pembayaran);
       }
 
-      // 3. Fetch Nomor WhatsApp Admin
+      // 3. Fetch Nomor WhatsApp Admin (Cek berbagai variasi nama field dari server)
       const resWa = await fetch(`${baseUrl}/tugu-bridge/v1/admin-whatsapp`, { cache: "no-store" });
       const dataWa = await resWa.json();
-      if (dataWa.success && dataWa.whatsapp_number) {
-        setAdminWhatsApp(dataWa.whatsapp_number);
+      if (dataWa.success) {
+        const fetchedNumber = dataWa.whatsapp_number || dataWa.phone || dataWa.whatsapp || dataWa.data?.whatsapp_number;
+        if (fetchedNumber) {
+          setAdminWhatsApp(fetchedNumber);
+        }
       }
     } catch (err) {
       console.error("Gagal load data:", err);
@@ -116,7 +119,9 @@ export default function AdminPaketPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           whatsapp_number: adminWhatsApp,
-          phone: adminWhatsApp 
+          phone: adminWhatsApp,
+          whatsapp: adminWhatsApp,
+          nomor_whatsapp: adminWhatsApp
         }),
       });
       const data = await res.json();
@@ -124,6 +129,7 @@ export default function AdminPaketPage() {
 
       if (res.ok && data.success) {
         toast.success("Nomor WhatsApp berhasil disimpan!");
+        fetchData(); // Muat ulang data agar state selalu sinkron
       } else {
         toast.error(`Gagal menyimpan: ${data.message || "Kesalahan server"}`);
       }
@@ -415,7 +421,7 @@ export default function AdminPaketPage() {
             <form onSubmit={handleSaveWhatsApp} className="space-y-3">
               <input
                 type="text" required value={adminWhatsApp} onChange={(e) => setAdminWhatsApp(e.target.value)}
-                placeholder="6281234567890"
+                placeholder="6285781826063"
                 className="w-full px-3.5 py-2 text-xs border rounded-xl outline-none focus:ring-2 focus:ring-emerald-500"
               />
               <button
