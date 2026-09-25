@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, Compass, ArrowUpRight, Filter, Loader2, MapPin } from "lucide-react";
+import { Search, ArrowUpRight, Filter, Loader2 } from "lucide-react";
 
 const DEFAULT_PLACEHOLDER = "https://desawisatatuguselatan.desa-wisata-bojongrangkas.com/wp-content/uploads/2026/placeholder.jpg";
 
@@ -34,7 +34,6 @@ export default function WisataPage() {
           if (Array.isArray(data)) {
             setWisataList(data);
 
-            // Ekstrak kategori HANYA dari data yang benar-benar ada di WordPress
             const catSet = new Set<string>();
             data.forEach((item) => {
               const cat = item.acf?.kategori || item.acf?.category;
@@ -91,7 +90,7 @@ export default function WisataPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-indigo-50/20 pt-24 sm:pt-15 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-indigo-50/20 pt-24 sm:pt-15 pb-24 px-4 sm:px-6 font-sans text-slate-800 relative">
       
       {/* BACKGROUND LIGHT GLOW */}
       <div className="absolute top-0 left-1/4 w-72 sm:w-96 h-72 sm:h-96 bg-sky-300/20 rounded-full blur-3xl pointer-events-none animate-pulse"></div>
@@ -112,11 +111,11 @@ export default function WisataPage() {
           </p>
         </div>
 
-        {/* SEARCH & FILTER BAR SECTION */}
-        <div className="bg-white/75 backdrop-blur-xl p-5 sm:p-7 rounded-[2rem] border border-white/80 shadow-xl shadow-sky-900/5 space-y-4 sm:space-y-5 relative">
+        {/* SEARCH & FILTER BAR SECTION (DIUBAH z-index KELUAR MENJADI z-30 DENGAN overflow-visible) */}
+        <div className="bg-white/75 backdrop-blur-xl p-5 sm:p-7 rounded-[2rem] border border-white/80 shadow-xl shadow-sky-900/5 space-y-4 sm:space-y-5 relative z-30 overflow-visible">
           
           {/* Input Search & Recommendations Dropdown */}
-          <div className="relative">
+          <div className="relative z-40">
             <Search className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-slate-400 z-10" size={18} />
             <input 
               type="text" 
@@ -130,7 +129,7 @@ export default function WisataPage() {
               className="w-full bg-slate-50/80 border border-slate-200/80 rounded-2xl pl-12 sm:pl-14 pr-4 sm:pr-6 py-3.5 sm:py-4 text-xs sm:text-sm text-slate-800 outline-none focus:border-sky-600 transition shadow-inner font-medium placeholder:text-slate-400"
             />
 
-            {/* Rekomendasi Live Search (Jika diketik >= 2 karakter) */}
+            {/* Rekomendasi Live Search (Melayang dengan z-50 dan shadow besar) */}
             {showRecommendations && searchQuery.trim().length >= 2 && (
               <div className="absolute left-0 right-0 top-full mt-2 bg-white/95 backdrop-blur-2xl border border-slate-200/90 rounded-2xl shadow-2xl overflow-hidden z-50 divide-y divide-slate-100 max-h-80 overflow-y-auto">
                 {searchRecommendations.length > 0 ? (
@@ -143,7 +142,7 @@ export default function WisataPage() {
                         key={item.id} 
                         href={`/wisata/${item.slug}`}
                         onClick={() => setShowRecommendations(false)}
-                        className="flex items-center gap-3.5 p-3 hover:bg-sky-50/60 transition duration-200"
+                        className="flex items-center gap-3.5 p-3 hover:bg-sky-50/80 transition duration-200"
                       >
                         <div className="relative w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200/60">
                           <Image src={imgUrl} alt={item.title?.rendered || "Wisata"} fill className="object-cover" />
@@ -165,7 +164,7 @@ export default function WisataPage() {
             )}
           </div>
 
-          {/* Filter Kategori Buttons (Dinamis Berdasarkan Data WP) */}
+          {/* Filter Kategori Buttons */}
           <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pt-2 border-t border-slate-100">
             <span className="text-[11px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider mr-1 sm:mr-2 flex items-center gap-1">
               <Filter size={13} /> Kategori:
@@ -190,9 +189,9 @@ export default function WisataPage() {
 
         </div>
 
-        {/* DAFTAR KARTU DESTINASI / PAKET */}
+        {/* DAFTAR KARTU DESTINASI / PAKET (Diberi z-10 agar selalu berada di bawah search) */}
         {filteredWisata.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 sm:gap-8 relative z-10">
             {filteredWisata.map((item) => {
               const imgUrl = item._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
               const acf = item.acf || {};
@@ -250,7 +249,7 @@ export default function WisataPage() {
             })}
           </div>
         ) : (
-          <div className="bg-white/75 backdrop-blur-xl p-8 sm:p-12 rounded-[2rem] border border-white/80 text-center space-y-3 shadow-xl shadow-sky-900/5">
+          <div className="bg-white/75 backdrop-blur-xl p-8 sm:p-12 rounded-[2rem] border border-white/80 text-center space-y-3 shadow-xl shadow-sky-900/5 relative z-10">
             <span className="text-3xl sm:text-4xl block">🔍</span>
             <h3 className="text-base sm:text-lg font-bold text-slate-900">Paket Wisata Tidak Ditemukan</h3>
             <p className="text-xs text-slate-500 max-w-sm mx-auto font-normal">
