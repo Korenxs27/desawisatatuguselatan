@@ -22,10 +22,10 @@ export default function RootLayout({
   return (
     <html lang="id">
       <head>
-        {/* Google Site Verification Meta Tag */}
+        {/* Tag Verifikasi Google Search Console Tugu Selatan */}
         <meta
           name="google-site-verification"
-          content="MASUKKAN_KODE_CONTENT_DARI_GOOGLE_CONSOLE_DI_SINI"
+          content="bmDxc68tvrBCQeNJec0i52yHODWz1-uXAM7B98t5qeQ"
         />
       </head>
       <body>
