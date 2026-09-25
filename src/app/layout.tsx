@@ -1,4 +1,4 @@
-"use client"; // Wajib agar bisa mendeteksi URL path aktif
+"use client";
 
 import { usePathname } from "next/navigation";
 import "./globals.css";
@@ -14,13 +14,20 @@ export default function RootLayout({
   
   // Cek apakah user sedang berada di halaman login atau admin
   const isLoginPage = pathname === "/login";
-  const isAdminPage = pathname?.startsWith("/admin"); // Mencakup /admin dan sub-halamannya jika ada
+  const isAdminPage = pathname?.startsWith("/admin");
 
   // Halaman khusus yang tidak butuh Navbar & Footer publik
   const hideLayout = isLoginPage || isAdminPage;
 
   return (
     <html lang="id">
+      <head>
+        {/* Google Site Verification Meta Tag */}
+        <meta
+          name="google-site-verification"
+          content="MASUKKAN_KODE_CONTENT_DARI_GOOGLE_CONSOLE_DI_SINI"
+        />
+      </head>
       <body>
         {/* Navbar hanya dirender jika BUKAN di halaman login atau admin */}
         {!hideLayout && <Navbar />}
