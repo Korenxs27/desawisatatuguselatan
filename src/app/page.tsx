@@ -251,13 +251,10 @@ export default function HomePage() {
         }
       } catch (e) { console.error(e); }
 
-      // =========================================================
       // 5. FETCH PRODUK UMKM (DENGAN FILTER KETAT NON-UMKM)
-      // =========================================================
       const combinedList: any[] = [];
       const seenIds = new Set<string>();
 
-      // Filter ketat untuk membuang produk sistem/booking/wisata/offroad
       const isBookingOrSystemProduct = (name: string) => {
         if (!name) return true;
         const uppercaseName = name.toUpperCase().trim();
@@ -362,6 +359,9 @@ export default function HomePage() {
   const renderSection = (type: string) => {
     switch (type) {
       case 'paket':
+        // JIKA TIDAK ADA DATA PAKET, DIBIKIN HIDDEN / NULL
+        if (!paketWisataList || paketWisataList.length === 0) return null;
+
         return (
           <section key="paket" id="paket-wisata" className="max-w-6xl mx-auto px-6 space-y-6">
             <div className="flex justify-between items-end border-b border-slate-200/80 pb-4">
@@ -376,48 +376,47 @@ export default function HomePage() {
             </div>
             
             <div ref={paketRef} className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth">
-              {paketWisataList.length > 0 ? (
-                paketWisataList.map((item: any) => {
-                  const imgUrl = item._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
-                  const acf = item.acf || {};
-                  const harga = acf.harga_minimal || acf.harga || 0;
-                  const shortDesc = getCleanExcerpt(item, "Paket wisata pilihan terbaik di Tugu Selatan Puncak.");
+              {paketWisataList.map((item: any) => {
+                const imgUrl = item._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
+                const acf = item.acf || {};
+                const harga = acf.harga_minimal || acf.harga || 0;
+                const shortDesc = getCleanExcerpt(item, "Paket wisata pilihan terbaik di Tugu Selatan Puncak.");
 
-                  return (
-                    <div key={item.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
-                      <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between relative">
-                        <div className="absolute top-4 right-4 z-10">
-                          <BookmarkButton item={{ id: item.id, title: item.title?.rendered || "Paket", slug: `/wisata/${item.slug}`, type: 'paket', image: imgUrl }} onNotify={triggerNotification} />
+                return (
+                  <div key={item.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
+                    <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between relative">
+                      <div className="absolute top-4 right-4 z-10">
+                        <BookmarkButton item={{ id: item.id, title: item.title?.rendered || "Paket", slug: `/wisata/${item.slug}`, type: 'paket', image: imgUrl }} onNotify={triggerNotification} />
+                      </div>
+                      <Link href={`/wisata/${item.slug}`} className="flex flex-col h-full justify-between">
+                        <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
+                          <Image src={imgUrl} alt={item.title?.rendered || "Wisata"} fill className="object-cover group-hover:scale-105 transition duration-500" />
                         </div>
-                        <Link href={`/wisata/${item.slug}`} className="flex flex-col h-full justify-between">
-                          <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
-                            <Image src={imgUrl} alt={item.title?.rendered || "Wisata"} fill className="object-cover group-hover:scale-105 transition duration-500" />
-                          </div>
-                          <div className="p-6 space-y-3">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{item.title?.rendered}</h3>
-                            <p className="text-xs text-slate-500 font-light line-clamp-2 leading-relaxed">{shortDesc}</p>
-                            <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
-                              <span className="text-sky-600 font-bold">
-                                {Number(harga) > 0 ? `Mulai Rp. ${Number(harga).toLocaleString("id-ID")}` : "Hubungi Pengelola"}
-                              </span>
-                              <div className="bg-slate-900 text-white p-2 rounded-xl group-hover:bg-sky-600 transition duration-300">
-                                <ArrowUpRight size={14} />
-                              </div>
+                        <div className="p-6 space-y-3">
+                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{item.title?.rendered}</h3>
+                          <p className="text-xs text-slate-500 font-light line-clamp-2 leading-relaxed">{shortDesc}</p>
+                          <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
+                            <span className="text-sky-600 font-bold">
+                              {Number(harga) > 0 ? `Mulai Rp. ${Number(harga).toLocaleString("id-ID")}` : "Hubungi Pengelola"}
+                            </span>
+                            <div className="bg-slate-900 text-white p-2 rounded-xl group-hover:bg-sky-600 transition duration-300">
+                              <ArrowUpRight size={14} />
                             </div>
                           </div>
-                        </Link>
-                      </div>
+                        </div>
+                      </Link>
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-xs text-slate-400 italic font-light py-6">Belum ada paket wisata terdaftar.</p>
-              )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         );
 
       case 'wisata':
+        // JIKA TIDAK ADA DATA OBJEK WISATA, DIBIKIN HIDDEN / NULL
+        if (!wisataList || wisataList.length === 0) return null;
+
         return (
           <section key="wisata" className="max-w-6xl mx-auto px-6 space-y-6">
             <div className="flex justify-between items-end border-b border-slate-200/80 pb-4">
@@ -432,48 +431,47 @@ export default function HomePage() {
             </div>
 
             <div ref={wisataRef} className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth">
-              {wisataList.length > 0 ? (
-                wisataList.map((item: any) => {
-                  const imgUrl = item._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
-                  const acf = item.acf || {};
-                  const harga = acf.harga || acf.harga_minimal || 0;
-                  const shortDesc = getCleanExcerpt(item, "Destinasi wisata alam yang indah dan menyejukkan.");
+              {wisataList.map((item: any) => {
+                const imgUrl = item._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
+                const acf = item.acf || {};
+                const harga = acf.harga || acf.harga_minimal || 0;
+                const shortDesc = getCleanExcerpt(item, "Destinasi wisata alam yang indah dan menyejukkan.");
 
-                  return (
-                    <div key={item.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
-                      <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between relative">
-                        <div className="absolute top-4 right-4 z-10">
-                          <BookmarkButton item={{ id: item.id, title: item.title?.rendered || "Destinasi", slug: `/wisata/${item.slug}`, type: 'wisata', image: imgUrl }} onNotify={triggerNotification} />
+                return (
+                  <div key={item.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
+                    <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between relative">
+                      <div className="absolute top-4 right-4 z-10">
+                        <BookmarkButton item={{ id: item.id, title: item.title?.rendered || "Destinasi", slug: `/wisata/${item.slug}`, type: 'wisata', image: imgUrl }} onNotify={triggerNotification} />
+                      </div>
+                      <Link href={`/wisata/${item.slug}`} className="flex flex-col h-full justify-between">
+                        <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
+                          <Image src={imgUrl} alt={item.title?.rendered || "Destinasi"} fill className="object-cover group-hover:scale-105 transition duration-500" />
                         </div>
-                        <Link href={`/wisata/${item.slug}`} className="flex flex-col h-full justify-between">
-                          <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
-                            <Image src={imgUrl} alt={item.title?.rendered || "Destinasi"} fill className="object-cover group-hover:scale-105 transition duration-500" />
-                          </div>
-                          <div className="p-6 space-y-3">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{item.title?.rendered}</h3>
-                            <p className="text-xs text-slate-500 font-light line-clamp-2 leading-relaxed">{shortDesc}</p>
-                            <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
-                              <span className="text-sky-600 font-bold">
-                                {Number(harga) > 0 ? `Rp. ${Number(harga).toLocaleString("id-ID")}` : "Gratis / Terbuka"}
-                              </span>
-                              <div className="bg-slate-900 text-white p-2 rounded-xl group-hover:bg-sky-600 transition duration-300">
-                                <ArrowUpRight size={14} />
-                              </div>
+                        <div className="p-6 space-y-3">
+                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{item.title?.rendered}</h3>
+                          <p className="text-xs text-slate-500 font-light line-clamp-2 leading-relaxed">{shortDesc}</p>
+                          <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
+                            <span className="text-sky-600 font-bold">
+                              {Number(harga) > 0 ? `Rp. ${Number(harga).toLocaleString("id-ID")}` : "Gratis / Terbuka"}
+                            </span>
+                            <div className="bg-slate-900 text-white p-2 rounded-xl group-hover:bg-sky-600 transition duration-300">
+                              <ArrowUpRight size={14} />
                             </div>
                           </div>
-                        </Link>
-                      </div>
+                        </div>
+                      </Link>
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-xs text-slate-400 italic font-light py-6">Belum ada objek wisata terdaftar.</p>
-              )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         );
 
       case 'umkm':
+        // JIKA TIDAK ADA DATA UMKM, DIBIKIN HIDDEN / NULL
+        if (!umkmList || umkmList.length === 0) return null;
+
         return (
           <section key="umkm" className="max-w-6xl mx-auto px-6 space-y-6">
             <div className="flex justify-between items-end border-b border-slate-200/80 pb-4">
@@ -488,41 +486,40 @@ export default function HomePage() {
             </div>
 
             <div ref={umkmRef} className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth">
-              {umkmList.length > 0 ? (
-                umkmList.map((product: any) => {
-                  const imgUrl = product.images?.[0]?.src || DEFAULT_PLACEHOLDER;
-                  const productName = product.name;
-                  const productPrice = product.price || 0;
-                  return (
-                    <div key={product.id} className="w-[65vw] sm:w-[35vw] lg:w-[22vw] shrink-0 snap-start">
-                      <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 p-5 shadow-lg hover:shadow-2xl transition duration-300 flex flex-col justify-between h-full relative">
-                        <div className="absolute top-4 right-4 z-10">
-                          <BookmarkButton item={{ id: product.id, title: productName, slug: `/umkm/${product.slug}`, type: 'umkm', image: imgUrl }} onNotify={triggerNotification} />
-                        </div>
-                        <div className="relative aspect-square w-full bg-slate-100 rounded-2xl overflow-hidden mb-4">
-                          <Image src={imgUrl} alt={productName || "UMKM"} fill className="object-cover group-hover:scale-105 transition duration-500" />
-                        </div>
-                        <div className="space-y-3">
-                          <h3 className="text-xs font-bold text-slate-900 line-clamp-1 uppercase tracking-tight">{productName}</h3>
-                          <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
-                            <span className="text-sky-600 font-bold">{productPrice ? `Rp. ${parseInt(productPrice).toLocaleString("id-ID")}` : "Hubungi Penjual"}</span>
-                            <Link href={`/umkm/${product.slug}`} className="text-[10px] bg-slate-900 hover:bg-sky-600 text-white font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider transition flex items-center gap-1 shadow-sm">
-                              Detail <Tag size={10} />
-                            </Link>
-                          </div>
+              {umkmList.map((product: any) => {
+                const imgUrl = product.images?.[0]?.src || DEFAULT_PLACEHOLDER;
+                const productName = product.name;
+                const productPrice = product.price || 0;
+                return (
+                  <div key={product.id} className="w-[65vw] sm:w-[35vw] lg:w-[22vw] shrink-0 snap-start">
+                    <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 p-5 shadow-lg hover:shadow-2xl transition duration-300 flex flex-col justify-between h-full relative">
+                      <div className="absolute top-4 right-4 z-10">
+                        <BookmarkButton item={{ id: product.id, title: productName, slug: `/umkm/${product.slug}`, type: 'umkm', image: imgUrl }} onNotify={triggerNotification} />
+                      </div>
+                      <div className="relative aspect-square w-full bg-slate-100 rounded-2xl overflow-hidden mb-4">
+                        <Image src={imgUrl} alt={productName || "UMKM"} fill className="object-cover group-hover:scale-105 transition duration-500" />
+                      </div>
+                      <div className="space-y-3">
+                        <h3 className="text-xs font-bold text-slate-900 line-clamp-1 uppercase tracking-tight">{productName}</h3>
+                        <div className="flex justify-between items-center text-xs pt-3 border-t border-slate-100">
+                          <span className="text-sky-600 font-bold">{productPrice ? `Rp. ${parseInt(productPrice).toLocaleString("id-ID")}` : "Hubungi Penjual"}</span>
+                          <Link href={`/umkm/${product.slug}`} className="text-[10px] bg-slate-900 hover:bg-sky-600 text-white font-bold px-3 py-1.5 rounded-xl uppercase tracking-wider transition flex items-center gap-1 shadow-sm">
+                            Detail <Tag size={10} />
+                          </Link>
                         </div>
                       </div>
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-xs text-slate-400 italic font-light py-6">Belum ada produk UMKM terdaftar.</p>
-              )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         );
 
       case 'homestay':
+        // JIKA TIDAK ADA DATA HOMESTAY, DIBIKIN HIDDEN / NULL
+        if (!homestayList || homestayList.length === 0) return null;
+
         return (
           <section key="homestay" className="max-w-6xl mx-auto px-6 space-y-6">
             <div className="flex justify-between items-end border-b border-slate-200/80 pb-4">
@@ -537,52 +534,51 @@ export default function HomePage() {
             </div>
 
             <div ref={homestayRef} className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth">
-              {homestayList.length > 0 ? (
-                homestayList.map((homestay: any) => {
-                  const imgUrl = homestay._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
-                  const acf = homestay.acf || {};
-                  const harga = acf.harga_per_malam || acf.harga || 0;
-                  const shortDesc = getCleanExcerpt(homestay, "Penginapan asri bernuansa khas pedesaan.");
+              {homestayList.map((homestay: any) => {
+                const imgUrl = homestay._embedded?.["wp:featuredmedia"]?.[0]?.source_url || DEFAULT_PLACEHOLDER;
+                const acf = homestay.acf || {};
+                const harga = acf.harga_per_malam || acf.harga || 0;
+                const shortDesc = getCleanExcerpt(homestay, "Penginapan asri bernuansa khas pedesaan.");
 
-                  return (
-                    <div key={homestay.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
-                      <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between relative">
-                        <div className="absolute top-4 right-4 z-10">
-                          <BookmarkButton item={{ id: homestay.id, title: homestay.title?.rendered || "Homestay", slug: `/homestay/${homestay.slug}`, type: 'homestay', image: imgUrl }} onNotify={triggerNotification} />
-                        </div>
-                        <Link href={`/homestay/${homestay.slug}`} className="flex flex-col h-full justify-between">
-                          <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
-                            <Image src={imgUrl} alt={homestay.title?.rendered || "Homestay"} fill className="object-cover group-hover:scale-105 transition duration-500" />
-                            <div className="absolute bottom-3 left-3 bg-slate-900/70 backdrop-blur-md border border-white/10 text-white text-[9px] px-3 py-1 rounded-lg flex items-center gap-1">
-                              <User size={10} /> Pemilik: {acf.nama_pemilik || "Warga Tugu Selatan"}
-                            </div>
-                          </div>
-                          <div className="p-6 space-y-3">
-                            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{homestay.title?.rendered}</h3>
-                            <p className="text-xs text-slate-500 font-light line-clamp-2 leading-relaxed">{shortDesc}</p>
-                            <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
-                              <div>
-                                <span className="text-slate-400 block text-[9px] font-light">Tarif / Malam</span>
-                                <span className="text-sky-600 font-bold text-sm">
-                                  {Number(harga) > 0 ? `Rp. ${Number(harga).toLocaleString("id-ID")}` : "Hubungi Pemilik"}
-                                </span>
-                              </div>
-                              <span className="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-xl font-bold text-[10px] uppercase tracking-wider border border-sky-500/20">Sewa</span>
-                            </div>
-                          </div>
-                        </Link>
+                return (
+                  <div key={homestay.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
+                    <div className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between relative">
+                      <div className="absolute top-4 right-4 z-10">
+                        <BookmarkButton item={{ id: homestay.id, title: homestay.title?.rendered || "Homestay", slug: `/homestay/${homestay.slug}`, type: 'homestay', image: imgUrl }} onNotify={triggerNotification} />
                       </div>
+                      <Link href={`/homestay/${homestay.slug}`} className="flex flex-col h-full justify-between">
+                        <div className="relative aspect-[4/3] w-full bg-slate-100 overflow-hidden">
+                          <Image src={imgUrl} alt={homestay.title?.rendered || "Homestay"} fill className="object-cover group-hover:scale-105 transition duration-500" />
+                          <div className="absolute bottom-3 left-3 bg-slate-900/70 backdrop-blur-md border border-white/10 text-white text-[9px] px-3 py-1 rounded-lg flex items-center gap-1">
+                            <User size={10} /> Pemilik: {acf.nama_pemilik || "Warga Tugu Selatan"}
+                          </div>
+                        </div>
+                        <div className="p-6 space-y-3">
+                          <h3 className="text-sm font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{homestay.title?.rendered}</h3>
+                          <p className="text-xs text-slate-500 font-light line-clamp-2 leading-relaxed">{shortDesc}</p>
+                          <div className="flex justify-between items-center pt-3 border-t border-slate-100 text-xs">
+                            <div>
+                              <span className="text-slate-400 block text-[9px] font-light">Tarif / Malam</span>
+                              <span className="text-sky-600 font-bold text-sm">
+                                {Number(harga) > 0 ? `Rp. ${Number(harga).toLocaleString("id-ID")}` : "Hubungi Pemilik"}
+                              </span>
+                            </div>
+                            <span className="bg-sky-50 text-sky-700 px-3 py-1.5 rounded-xl font-bold text-[10px] uppercase tracking-wider border border-sky-500/20">Sewa</span>
+                          </div>
+                        </div>
+                      </Link>
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-xs text-slate-400 italic font-light py-6">Belum ada homestay terdaftar.</p>
-              )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         );
 
       case 'gallery':
+        // JIKA TIDAK ADA DATA GALERI, DIBIKIN HIDDEN / NULL
+        if (!galleryList || galleryList.length === 0) return null;
+
         return (
           <section key="gallery" className="max-w-6xl mx-auto px-6 space-y-6">
             <div className="flex justify-between items-end border-b border-slate-200/80 pb-4">
@@ -602,47 +598,43 @@ export default function HomePage() {
             </div>
 
             <div ref={galleryRef} className="flex gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scrollbar-none scroll-smooth">
-              {galleryList.length > 0 ? (
-                galleryList.map((item: any) => {
-                  const isVideo = item.image && item.image.match(/\.(mp4|webm|ogg|mov)$/i);
-                  return (
-                    <div key={item.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
-                      <div 
-                        onClick={() => {
-                          setSelectedMedia(item);
-                          setIsZoomed(false);
-                        }}
-                        className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between cursor-pointer"
-                      >
-                        <div className="relative aspect-[4/3] w-full bg-slate-900 overflow-hidden">
-                          {isVideo ? (
-                            <>
-                              <video src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-80" muted />
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                <div className="w-12 h-12 bg-sky-600/90 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition duration-300">
-                                  <Play size={20} fill="white" className="ml-0.5" />
-                                </div>
+              {galleryList.map((item: any) => {
+                const isVideo = item.image && item.image.match(/\.(mp4|webm|ogg|mov)$/i);
+                return (
+                  <div key={item.id} className="w-[85vw] sm:w-[45vw] lg:w-[28vw] shrink-0 snap-start">
+                    <div 
+                      onClick={() => {
+                        setSelectedMedia(item);
+                        setIsZoomed(false);
+                      }}
+                      className="group bg-white/75 backdrop-blur-xl rounded-[2rem] overflow-hidden border border-slate-200/90 shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col h-full justify-between cursor-pointer"
+                    >
+                      <div className="relative aspect-[4/3] w-full bg-slate-900 overflow-hidden">
+                        {isVideo ? (
+                          <>
+                            <video src={item.image} className="w-full h-full object-cover group-hover:scale-105 transition duration-500 opacity-80" muted />
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <div className="w-12 h-12 bg-sky-600/90 backdrop-blur-md rounded-full flex items-center justify-center text-white shadow-lg group-hover:scale-110 transition duration-300">
+                                <Play size={20} fill="white" className="ml-0.5" />
                               </div>
-                            </>
-                          ) : (
-                            item.image && <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition duration-500" />
-                          )}
+                            </div>
+                          </>
+                        ) : (
+                          item.image && <Image src={item.image} alt={item.title} fill className="object-cover group-hover:scale-105 transition duration-500" />
+                        )}
 
-                          <span className="absolute top-3 left-3 bg-slate-900/75 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1 rounded-lg uppercase tracking-wider flex items-center gap-1">
-                            {isVideo ? <Film size={10} /> : <ImageIcon size={10} />} {item.category || "Dokumentasi"}
-                          </span>
-                        </div>
-                        <div className="p-5 space-y-1.5 bg-white/60 backdrop-blur-md">
-                          <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{item.title}</h3>
-                          {item.date && <p className="text-[10px] text-slate-400 font-light">🕒 {item.date}</p>}
-                        </div>
+                        <span className="absolute top-3 left-3 bg-slate-900/75 backdrop-blur-md text-white text-[9px] font-bold px-3 py-1 rounded-lg uppercase tracking-wider flex items-center gap-1">
+                          {isVideo ? <Film size={10} /> : <ImageIcon size={10} />} {item.category || "Dokumentasi"}
+                        </span>
+                      </div>
+                      <div className="p-5 space-y-1.5 bg-white/60 backdrop-blur-md">
+                        <h3 className="text-xs font-bold text-slate-900 uppercase tracking-tight line-clamp-1">{item.title}</h3>
+                        {item.date && <p className="text-[10px] text-slate-400 font-light">🕒 {item.date}</p>}
                       </div>
                     </div>
-                  );
-                })
-              ) : (
-                <p className="text-xs text-slate-400 italic font-light py-6">Belum ada dokumentasi galeri yang diunggah.</p>
-              )}
+                  </div>
+                );
+              })}
             </div>
           </section>
         );

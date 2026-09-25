@@ -31,7 +31,8 @@ import {
   Calendar,
   Users,
   Tag,
-  MapPin
+  MapPin,
+  TrendingUp
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
@@ -120,7 +121,7 @@ export default function AdminDashboardPage() {
   const handleMarkAsPaid = async (orderId: number) => {
     setUpdatingStatus(true);
     const loadingToast = toast.loading("Memperbarui status pembayaran ke server...", {
-      style: { borderRadius: '16px', background: '#334155', color: '#fff', fontSize: '12px' }
+      style: { borderRadius: '16px', background: '#0f172a', color: '#fff', fontSize: '12px' }
     });
 
     try {
@@ -135,8 +136,8 @@ export default function AdminDashboardPage() {
 
       if (res.ok && data.success) {
         toast.success(`Pesanan #${orderId} berhasil dikonfirmasi Lunas!`, {
-          style: { borderRadius: '16px', background: '#065f46', color: '#fff', fontSize: '12px' },
-          iconTheme: { primary: '#34d399', secondary: '#065f46' }
+          style: { borderRadius: '16px', background: '#0284c7', color: '#fff', fontSize: '12px' },
+          iconTheme: { primary: '#38bdf8', secondary: '#0369a1' }
         });
         setSelectedOrder(null);
         fetchAllAdminData();
@@ -174,20 +175,24 @@ export default function AdminDashboardPage() {
   ];
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/20 to-slate-100 flex flex-col md:flex-row text-slate-800 font-sans relative ${isMobileSidebarOpen ? 'overflow-hidden h-screen' : ''}`}>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-indigo-50/20 text-slate-800 antialiased selection:bg-sky-500 selection:text-white flex flex-col md:flex-row font-sans relative ${isMobileSidebarOpen ? 'overflow-hidden h-screen' : ''}`}>
       
+      {/* BACKGROUND LIGHT GLOW SAMA SEPERTI BERANDA */}
+      <div className="fixed top-0 left-1/4 w-[30rem] h-[30rem] bg-sky-300/20 rounded-full blur-3xl pointer-events-none animate-pulse z-0"></div>
+      <div className="fixed top-1/3 right-10 w-[25rem] h-[25rem] bg-indigo-300/20 rounded-full blur-3xl pointer-events-none z-0"></div>
+
       <Toaster position="top-right" reverseOrder={false} />
 
       {/* SIDEBAR DESKTOP */}
-      <aside className="hidden md:flex w-64 bg-white/85 backdrop-blur-xl border-r border-slate-200/85 flex-col justify-between p-5 fixed h-full z-40 shadow-sm">
+      <aside className="hidden md:flex w-64 bg-white/75 backdrop-blur-xl border-r border-slate-200/80 flex-col justify-between p-5 fixed h-full z-40 shadow-sm">
         <div>
-          <div className="pb-6 mb-6 border-b border-slate-100 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold flex items-center justify-center text-sm shadow-md shadow-emerald-500/20">
+          <div className="pb-6 mb-6 border-b border-slate-200/80 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-black flex items-center justify-center text-sm shadow-md shadow-sky-600/25">
               TS
             </div>
             <div>
-              <h2 className="font-bold text-slate-900 text-sm leading-tight">Admin BPH</h2>
-              <p className="text-[11px] text-emerald-600 font-medium">Tugu Selatan</p>
+              <h2 className="font-extrabold text-slate-900 text-sm leading-tight">Admin BPH</h2>
+              <p className="text-[11px] text-sky-600 font-bold uppercase tracking-wider">Tugu Selatan</p>
             </div>
           </div>
 
@@ -198,7 +203,11 @@ export default function AdminDashboardPage() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition ${item.active ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/20' : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'}`}
+                  className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition duration-200 ${
+                    item.active 
+                      ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-lg shadow-sky-600/25 font-bold' 
+                      : 'text-slate-600 hover:bg-sky-50/80 hover:text-sky-600'
+                  }`}
                 >
                   <Icon size={16} /> {item.name}
                 </Link>
@@ -207,14 +216,16 @@ export default function AdminDashboardPage() {
           </nav>
         </div>
 
-        <div className="pt-4 border-t border-slate-100 space-y-3">
-          <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+        <div className="pt-4 border-t border-slate-200/80 space-y-3">
+          <div className="bg-slate-900/5 p-3 rounded-2xl border border-slate-200/60 backdrop-blur-md">
             <p className="text-[11px] font-bold text-slate-800 truncate">{adminName}</p>
-            <p className="text-[10px] text-emerald-600">WP Connected</p>
+            <span className="text-[10px] text-sky-600 font-bold flex items-center gap-1 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-sky-500 animate-ping"></span> WP Connected
+            </span>
           </div>
           <button
             onClick={handleAdminLogout}
-            className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl text-xs font-semibold transition cursor-pointer"
+            className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold transition cursor-pointer"
           >
             <LogOut size={15} /> Keluar (Logout)
           </button>
@@ -223,20 +234,20 @@ export default function AdminDashboardPage() {
 
       {/* SIDEBAR MOBILE DRAWER */}
       {isMobileSidebarOpen && (
-        <div className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex">
-          <div className="w-72 bg-white fixed inset-y-0 left-0 z-50 shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-left duration-200 overflow-y-auto">
+        <div className="md:hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex">
+          <div className="w-72 bg-white/95 backdrop-blur-2xl fixed inset-y-0 left-0 z-50 shadow-2xl p-5 flex flex-col justify-between animate-in slide-in-from-left duration-200 overflow-y-auto border-r border-white/40">
             <div>
-              <div className="flex justify-between items-center pb-6 mb-6 border-b border-slate-100">
+              <div className="flex justify-between items-center pb-6 mb-6 border-b border-slate-200/80">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold flex items-center justify-center text-sm shadow-md">
+                  <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-sky-600 to-indigo-600 text-white font-black flex items-center justify-center text-sm shadow-md">
                     TS
                   </div>
                   <div>
-                    <h2 className="font-bold text-slate-900 text-sm leading-tight">Admin BPH</h2>
-                    <p className="text-[11px] text-emerald-600 font-medium">Tugu Selatan</p>
+                    <h2 className="font-extrabold text-slate-900 text-sm leading-tight">Admin BPH</h2>
+                    <p className="text-[11px] text-sky-600 font-bold uppercase tracking-wider">Tugu Selatan</p>
                   </div>
                 </div>
-                <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition">
+                <button onClick={() => setIsMobileSidebarOpen(false)} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-full transition cursor-pointer">
                   <X size={16} />
                 </button>
               </div>
@@ -249,7 +260,11 @@ export default function AdminDashboardPage() {
                       key={item.href}
                       href={item.href}
                       onClick={() => setIsMobileSidebarOpen(false)}
-                      className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition ${item.active ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md' : 'text-slate-600 hover:bg-emerald-50'}`}
+                      className={`w-full flex items-center gap-3 px-3.5 py-3 rounded-2xl transition ${
+                        item.active 
+                          ? 'bg-gradient-to-r from-sky-600 to-indigo-600 text-white shadow-md font-bold' 
+                          : 'text-slate-600 hover:bg-sky-50'
+                      }`}
                     >
                       <Icon size={16} /> {item.name}
                     </Link>
@@ -258,10 +273,10 @@ export default function AdminDashboardPage() {
               </nav>
             </div>
 
-            <div className="pt-4 border-t border-slate-100">
+            <div className="pt-4 border-t border-slate-200/80">
               <button
                 onClick={handleAdminLogout}
-                className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-red-50 hover:bg-red-100 text-red-600 rounded-2xl text-xs font-semibold transition"
+                className="w-full flex items-center justify-center gap-2 py-3 px-3 bg-rose-50 hover:bg-rose-100 text-rose-600 rounded-2xl text-xs font-bold transition cursor-pointer"
               >
                 <LogOut size={15} /> Keluar (Logout)
               </button>
@@ -272,18 +287,18 @@ export default function AdminDashboardPage() {
       )}
 
       {/* MAIN CONTENT AREA */}
-      <main className="flex-1 md:ml-64 p-4 sm:p-8 space-y-6 md:space-y-8 w-full">
+      <main className="flex-1 md:ml-64 p-4 sm:p-8 space-y-6 md:space-y-8 w-full z-10 relative">
         
         {/* Top Header Bar */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/70 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white/75 backdrop-blur-xl p-5 sm:p-6 rounded-[2rem] shadow-lg border border-slate-200/90">
           <div className="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
             <div>
-              <h1 className="text-lg sm:text-xl font-extrabold text-slate-900">Halo, {adminName}</h1>
-              <p className="text-xs text-slate-500 mt-0.5">Pusat kendali pariwisata Desa Wisata Tugu Selatan.</p>
+              <h1 className="text-lg sm:text-xl font-black text-slate-900 tracking-tight">Halo, {adminName}</h1>
+              <p className="text-xs text-slate-500 mt-0.5 font-normal">Pusat kendali pariwisata Desa Wisata Tugu Selatan.</p>
             </div>
             <button
               onClick={() => setIsMobileSidebarOpen(true)}
-              className="md:hidden p-2.5 rounded-2xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition"
+              className="md:hidden p-2.5 rounded-2xl bg-sky-50 text-sky-600 hover:bg-sky-100 transition cursor-pointer"
             >
               <Menu size={20} />
             </button>
@@ -292,16 +307,16 @@ export default function AdminDashboardPage() {
           <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto justify-end">
             <button 
               onClick={fetchAllAdminData} 
-              className="p-2.5 sm:p-3 text-slate-600 bg-white hover:bg-slate-50 border border-slate-200/80 rounded-2xl shadow-sm transition flex items-center gap-2 text-xs font-semibold cursor-pointer"
+              className="p-2.5 sm:p-3 text-slate-600 bg-white/80 hover:bg-white border border-slate-200/80 rounded-2xl shadow-sm transition flex items-center gap-2 text-xs font-bold cursor-pointer"
             >
-              <RefreshCw size={15} className={refreshing ? "animate-spin text-emerald-600" : ""} />
+              <RefreshCw size={15} className={refreshing ? "animate-spin text-sky-600" : ""} />
               <span className="hidden sm:inline">Sinkronisasi</span>
             </button>
             <a 
               href="https://script.google.com/macros/s/AKfycbyagd9YKHOB9xZ42f3ZgxOLfVMkEYGz06GoQhBqi-ZWp6yQUbIhpElxwevvJ4LJYSCN/exec" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 sm:gap-2 bg-emerald-700 text-white text-xs font-semibold px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-2xl hover:bg-emerald-800 shadow-md transition"
+              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-sky-600 to-indigo-600 text-white text-xs font-bold uppercase tracking-wider px-4 sm:px-5 py-2.5 sm:py-3 rounded-2xl hover:from-sky-700 hover:to-indigo-700 shadow-lg shadow-sky-600/20 transition transform active:scale-95"
             >
               Google Sheets <ExternalLink size={13} />
             </a>
@@ -309,40 +324,46 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* STATS CARDS */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="bg-white/75 backdrop-blur-xl p-6 rounded-[2rem] shadow-lg border border-slate-200/90 relative overflow-hidden group">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pendapatan</span>
-              <div className="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><CreditCard size={18} /></div>
+              <span className="text-[11px] font-bold text-sky-600 uppercase tracking-widest flex items-center gap-1.5">
+                <TrendingUp size={14}/> Total Pendapatan
+              </span>
+              <div className="p-3 bg-sky-50 text-sky-600 rounded-2xl border border-sky-100"><CreditCard size={18} /></div>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900">Rp {stats.revenue.toLocaleString("id-ID")}</div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">Rp {stats.revenue.toLocaleString("id-ID")}</div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+          <div className="bg-white/75 backdrop-blur-xl p-6 rounded-[2rem] shadow-lg border border-slate-200/90 relative overflow-hidden group">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Total Pesanan</span>
-              <div className="p-3 bg-blue-50 text-blue-600 rounded-2xl"><ShoppingBag size={18} /></div>
+              <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1.5">
+                <ShoppingBag size={14}/> Total Pesanan
+              </span>
+              <div className="p-3 bg-indigo-50 text-indigo-600 rounded-2xl border border-indigo-100"><ShoppingBag size={18} /></div>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900">{loading ? "..." : stats.totalOrders} Transaksi</div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{loading ? "..." : stats.totalOrders} <span className="text-xs font-semibold text-slate-400">Transaksi</span></div>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
+          <div className="bg-white/75 backdrop-blur-xl p-6 rounded-[2rem] shadow-lg border border-slate-200/90 relative overflow-hidden group">
             <div className="flex justify-between items-center mb-4">
-              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Galeri Foto</span>
-              <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl"><Camera size={18} /></div>
+              <span className="text-[11px] font-bold text-purple-600 uppercase tracking-widest flex items-center gap-1.5">
+                <Camera size={14}/> Galeri Foto
+              </span>
+              <div className="p-3 bg-purple-50 text-purple-600 rounded-2xl border border-purple-100"><Camera size={18} /></div>
             </div>
-            <div className="text-xl sm:text-2xl font-black text-slate-900">{loading ? "..." : stats.totalGallery} Media</div>
+            <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">{loading ? "..." : stats.totalGallery} <span className="text-xs font-semibold text-slate-400">Media</span></div>
           </div>
         </div>
 
         {/* TABEL PESANAN TERBARU */}
-        <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60">
-          <div className="flex justify-between items-center mb-6">
+        <div className="bg-white/75 backdrop-blur-xl p-6 sm:p-7 rounded-[2rem] shadow-lg border border-slate-200/90 space-y-6">
+          <div className="flex justify-between items-center border-b border-slate-200/80 pb-4">
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">Daftar Pesanan & Status Pembayaran</h2>
-              <p className="text-[11px] sm:text-xs text-slate-500">Transaksi paket wisata dan produk UMKM terbaru.</p>
+              <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Daftar Pesanan & Status Pembayaran</h2>
+              <p className="text-xs text-slate-500 font-normal">Transaksi paket wisata dan produk UMKM terbaru.</p>
             </div>
-            <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-xl">
+            <span className="text-xs font-bold text-sky-600 bg-sky-50 px-3 py-1.5 rounded-xl border border-sky-100">
               Total: {orders.length}
             </span>
           </div>
@@ -360,7 +381,7 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {orders.length === 0 ? (
-                  <tr><td colSpan={5} className="py-8 text-center text-slate-400 italic">Belum ada pesanan masuk.</td></tr>
+                  <tr><td colSpan={5} className="py-8 text-center text-slate-400 italic font-light">Belum ada pesanan masuk.</td></tr>
                 ) : (
                   displayedOrders.map((order, index) => {
                     const orderId = order.id || order.order_id;
@@ -369,23 +390,23 @@ export default function AdminDashboardPage() {
                     const isPaid = order.status === "completed" || order.status === "processing" || order.status === "paid";
 
                     return (
-                      <tr key={index} className="hover:bg-slate-50 transition">
-                        <td className="py-4 font-bold text-slate-900">#{orderId}</td>
-                        <td className="py-4 font-semibold text-slate-700">{name}</td>
-                        <td className="py-4 font-bold text-slate-900">Rp {price.toLocaleString("id-ID")}</td>
+                      <tr key={index} className="hover:bg-slate-50/80 transition">
+                        <td className="py-4 font-black text-slate-900">#{orderId}</td>
+                        <td className="py-4 font-bold text-slate-700">{name}</td>
+                        <td className="py-4 font-black text-sky-600">Rp {price.toLocaleString("id-ID")}</td>
                         <td className="py-4">
                           {isPaid ? (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[10px]">
+                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500 text-white rounded-full font-extrabold text-[10px] uppercase tracking-wider shadow-sm">
                               <CheckCircle size={12} /> Paid
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-bold text-[10px]">
+                            <span className="inline-flex items-center gap-1 px-3 py-1 bg-amber-500 text-white rounded-full font-extrabold text-[10px] uppercase tracking-wider shadow-sm">
                               <Clock size={12} /> Pending
                             </span>
                           )}
                         </td>
                         <td className="py-4 text-right">
-                          <button onClick={() => setSelectedOrder(order)} className="inline-flex items-center gap-1 px-3 py-1.5 bg-slate-100 hover:bg-emerald-600 hover:text-white rounded-xl transition cursor-pointer">
+                          <button onClick={() => setSelectedOrder(order)} className="inline-flex items-center gap-1 px-3.5 py-1.5 bg-slate-900 text-white hover:bg-sky-600 rounded-xl font-bold text-[11px] transition cursor-pointer shadow-sm">
                             <Eye size={13} /> Detail
                           </button>
                         </td>
@@ -398,10 +419,10 @@ export default function AdminDashboardPage() {
           </div>
 
           {orders.length > 5 && (
-            <div className="pt-4 text-center border-t border-slate-100 mt-4">
+            <div className="pt-4 text-center border-t border-slate-100">
               <button
                 onClick={() => setShowAllOrders(!showAllOrders)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl text-xs font-bold transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-2xl text-xs font-bold transition cursor-pointer border border-sky-200/60"
               >
                 {showAllOrders ? <>Sembunyikan <ChevronUp size={14} /></> : <>Lihat Semua Pesanan ({orders.length - 5} lainnya) <ChevronDown size={14} /></>}
               </button>
@@ -410,18 +431,18 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* KOTAK MASUK PESAN */}
-        <div className="bg-white/80 backdrop-blur-md p-5 sm:p-6 rounded-3xl shadow-sm border border-slate-200/60 space-y-4">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white/75 backdrop-blur-xl p-6 sm:p-7 rounded-[2rem] shadow-lg border border-slate-200/90 space-y-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-200/80 pb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-50 text-emerald-600 rounded-2xl"><MessageSquare size={18} /></div>
+              <div className="p-2.5 bg-sky-50 text-sky-600 rounded-2xl border border-sky-100"><MessageSquare size={18} /></div>
               <div>
-                <h2 className="text-sm sm:text-base font-bold text-slate-900">Kotak Pesan & Aspirasi</h2>
-                <p className="text-[11px] sm:text-xs text-slate-500">Pesan dari pengunjung.</p>
+                <h2 className="text-base sm:text-lg font-black text-slate-900 tracking-tight">Kotak Pesan & Aspirasi</h2>
+                <p className="text-xs text-slate-500 font-normal">Pesan dari pengunjung.</p>
               </div>
             </div>
             
             <div className="relative w-full sm:w-64">
-              <span className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+              <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                 <Search size={14} />
               </span>
               <input 
@@ -429,7 +450,7 @@ export default function AdminDashboardPage() {
                 placeholder="Cari pesan..."
                 value={messageSearch}
                 onChange={(e) => setMessageSearch(e.target.value)}
-                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-2xl text-xs text-slate-800 focus:outline-none focus:border-emerald-500 transition"
+                className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200/80 rounded-2xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-sky-500 transition"
               />
             </div>
           </div>
@@ -445,13 +466,13 @@ export default function AdminDashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {displayedMessages.length === 0 ? (
-                  <tr><td colSpan={3} className="py-8 text-center text-slate-400 italic">Belum ada pesan masuk.</td></tr>
+                  <tr><td colSpan={3} className="py-8 text-center text-slate-400 italic font-light">Belum ada pesan masuk.</td></tr>
                 ) : (
                   displayedMessages.map((msg, index) => (
-                    <tr key={index} className="hover:bg-slate-50 transition">
+                    <tr key={index} className="hover:bg-slate-50/80 transition">
                       <td className="py-4 font-bold text-slate-900">{msg.nama}</td>
-                      <td className="py-4 text-slate-700 font-medium">{msg.pesan}</td>
-                      <td className="py-4 text-slate-400 text-[11px]">{msg.tanggal}</td>
+                      <td className="py-4 text-slate-600 font-normal leading-relaxed">{msg.pesan}</td>
+                      <td className="py-4 text-slate-400 text-[11px] font-light">{msg.tanggal}</td>
                     </tr>
                   ))
                 )}
@@ -460,10 +481,10 @@ export default function AdminDashboardPage() {
           </div>
 
           {filteredMessages.length > 5 && (
-            <div className="pt-4 text-center border-t border-slate-100 mt-2">
+            <div className="pt-4 text-center border-t border-slate-100">
               <button
                 onClick={() => setShowAllMessages(!showAllMessages)}
-                className="inline-flex items-center gap-1.5 px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-2xl text-xs font-bold transition cursor-pointer"
+                className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-sky-50 hover:bg-sky-100 text-sky-700 rounded-2xl text-xs font-bold transition cursor-pointer border border-sky-200/60"
               >
                 {showAllMessages ? <>Sembunyikan <ChevronUp size={14} /></> : <>Lihat Semua Pesan ({filteredMessages.length - 5} lainnya) <ChevronDown size={14} /></>}
               </button>
@@ -473,7 +494,7 @@ export default function AdminDashboardPage() {
 
       </main>
 
-      {/* MODAL POP-UP DETAIL ORDER LENGKAP DENGAN DETEKSI UMKM / WISATA */}
+      {/* MODAL POP-UP DETAIL ORDER LENGKAP DENGAN TEMA TUGU SELATAN */}
       {selectedOrder && (() => {
         const orderId = selectedOrder.id || selectedOrder.order_id || "-";
         
@@ -506,10 +527,8 @@ export default function AdminDashboardPage() {
         const totalPrice = Number(selectedOrder.total || selectedOrder.total_price || 0);
         const paymentMethod = selectedOrder.payment_name || selectedOrder.payment_method_title || "Transfer Bank / QRIS";
 
-        // Deteksi apakah jenis pesanan adalah Produk UMKM
         const isUmkm = category.toLowerCase().includes("umkm") || category.toLowerCase().includes("produk");
 
-        // Ambil Alamat Pengiriman (jika UMKM)
         const customerAddress = 
           selectedOrder.customer_address || 
           selectedOrder.address || 
@@ -518,7 +537,6 @@ export default function AdminDashboardPage() {
           selectedOrder.meta?.address || 
           "-";
 
-        // Ambil Jadwal Kunjungan (jika Paket Wisata)
         const visitDate = 
           selectedOrder.tgl_kunjungan || 
           selectedOrder.tanggal_kunjungan || 
@@ -539,18 +557,18 @@ export default function AdminDashboardPage() {
         const isPaid = selectedOrder.status === 'paid' || selectedOrder.status === 'completed' || selectedOrder.status === 'processing';
 
         return (
-          <div onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-black/70 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-            <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-5 shadow-2xl border border-slate-100 relative my-auto max-h-[92vh] overflow-y-auto font-sans text-slate-800">
+          <div onClick={() => setSelectedOrder(null)} className="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-[99999] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+            <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-[2.5rem] max-w-lg w-full p-6 sm:p-8 space-y-6 shadow-2xl border border-white/80 relative my-auto max-h-[92vh] overflow-y-auto font-sans text-slate-800">
               
               {/* Header Modal */}
               <div className="flex justify-between items-start pb-4 border-b border-slate-100">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="bg-emerald-50 text-emerald-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-emerald-200">
+                    <span className="bg-sky-50 text-sky-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border border-sky-200">
                       {isUmkm ? "Detail Rincian Pesanan UMKM" : "Detail Rincian Booking"}
                     </span>
                     <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider border ${
-                      isPaid ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-50 text-amber-700 border-amber-200'
+                      isPaid ? 'bg-emerald-500 text-white border-emerald-600' : 'bg-amber-500 text-white border-amber-600'
                     }`}>
                       {isPaid ? 'LUNAS (PAID)' : 'MENUNGGU VERIFIKASI'}
                     </span>
@@ -567,9 +585,9 @@ export default function AdminDashboardPage() {
               <div className="space-y-3 text-xs">
                 
                 {/* Detail Kategori & Nama Produk / Paket */}
-                <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2">
+                <div className="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/80 space-y-2">
                   <div className="flex items-center justify-between text-[11px] text-slate-500 font-bold uppercase tracking-wider">
-                    <span className="flex items-center gap-1"><Tag size={13} className="text-emerald-600" /> Kategori</span>
+                    <span className="flex items-center gap-1"><Tag size={13} className="text-sky-600" /> Kategori</span>
                     <span className="text-slate-800 font-extrabold">{category}</span>
                   </div>
                   <div className="pt-2 border-t border-slate-200/60">
@@ -580,43 +598,41 @@ export default function AdminDashboardPage() {
                   </div>
                 </div>
 
-                {/* Grid Informasi Pemesan (Disesuaikan Otomatis Antara UMKM vs Wisata) */}
+                {/* Grid Informasi Pemesan */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                  <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <User size={12} className="text-emerald-600" /> Nama Pemesan
+                      <User size={12} className="text-sky-600" /> Nama Pemesan
                     </span>
                     <p className="text-xs font-bold text-slate-800">{customerName}</p>
                   </div>
 
-                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                  <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Phone size={12} className="text-emerald-600" /> No. HP / WhatsApp
+                      <Phone size={12} className="text-sky-600" /> No. HP / WhatsApp
                     </span>
                     <p className="text-xs font-bold text-slate-800">{customerPhone}</p>
                   </div>
 
-                  {/* KONDISIONAL: ALAMAT PENGIRIMAN (UMKM) VS JADWAL KUNJUNGAN (WISATA) */}
                   {isUmkm ? (
-                    <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        <MapPin size={12} className="text-emerald-600" /> Alamat Pengiriman
+                        <MapPin size={12} className="text-sky-600" /> Alamat Pengiriman
                       </span>
                       <p className="text-xs font-bold text-slate-800 leading-snug">{customerAddress}</p>
                     </div>
                   ) : (
-                    <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                    <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                       <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                        <Calendar size={12} className="text-emerald-600" /> Jadwal Kunjungan
+                        <Calendar size={12} className="text-sky-600" /> Jadwal Kunjungan
                       </span>
-                      <p className="text-xs font-extrabold text-emerald-700">{visitDate}</p>
+                      <p className="text-xs font-extrabold text-sky-600">{visitDate}</p>
                     </div>
                   )}
 
-                  {/* KONDISIONAL: JUMLAH PESANAN (UMKM) VS JUMLAH PESERTA (WISATA) */}
-                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                  <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Users size={12} className="text-emerald-600" /> {isUmkm ? "Jumlah Pesanan" : "Jumlah Peserta"}
+                      <Users size={12} className="text-sky-600" /> {isUmkm ? "Jumlah Pesanan" : "Jumlah Peserta"}
                     </span>
                     <p className="text-xs font-bold text-slate-800">
                       {quantity} {isUmkm ? "Pcs / Unit" : "Orang"}
@@ -626,25 +642,25 @@ export default function AdminDashboardPage() {
 
                 {/* Email & Metode Pembayaran */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                  <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <Mail size={12} className="text-emerald-600" /> Email Pemesan
+                      <Mail size={12} className="text-sky-600" /> Email Pemesan
                     </span>
                     <p className="text-xs font-medium text-slate-700 truncate">{customerEmail}</p>
                   </div>
 
-                  <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
+                  <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                      <CreditCard size={12} className="text-emerald-600" /> Metode Bayar
+                      <CreditCard size={12} className="text-sky-600" /> Metode Bayar
                     </span>
                     <p className="text-xs font-bold text-slate-800">{paymentMethod}</p>
                   </div>
                 </div>
 
                 {/* Struk / Link Bukti Transfer */}
-                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200/70 space-y-2">
+                <div className="bg-slate-50/80 p-3.5 rounded-2xl border border-slate-200/70 space-y-2">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1">
-                    <FileText size={12} className="text-emerald-600" /> Link Bukti Transfer
+                    <FileText size={12} className="text-sky-600" /> Link Bukti Transfer
                   </span>
                   {buktiUrl ? (
                     <div className="space-y-2">
@@ -658,7 +674,7 @@ export default function AdminDashboardPage() {
                           }}
                         />
                       </div>
-                      <a href={buktiUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-3 py-2 rounded-xl border border-emerald-200 transition w-full">
+                      <a href={buktiUrl} target="_blank" rel="noreferrer" className="inline-flex items-center justify-center gap-1.5 text-xs font-bold text-sky-600 hover:text-sky-700 bg-sky-50 px-3 py-2 rounded-xl border border-sky-200 transition w-full">
                         Buka Bukti Transfer Penuh <ExternalLink size={12} />
                       </a>
                     </div>
@@ -668,14 +684,14 @@ export default function AdminDashboardPage() {
                 </div>
 
                 {/* Total Tagihan */}
-                <div className="bg-emerald-50/70 p-4 rounded-2xl border border-emerald-200/80 flex justify-between items-center mt-2">
+                <div className="bg-sky-50/80 p-4 rounded-2xl border border-sky-200/80 flex justify-between items-center mt-2">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-emerald-800 block">Total Pembayaran</span>
+                    <span className="text-[10px] uppercase font-bold text-sky-800 block">Total Pembayaran</span>
                     <span className="text-[11px] text-slate-500 font-medium">
                       Rp {Math.round(totalPrice / (quantity || 1)).toLocaleString("id-ID")} x {quantity} {isUmkm ? "Pcs" : "Orang"}
                     </span>
                   </div>
-                  <span className="text-xl font-black text-emerald-700">
+                  <span className="text-xl font-black text-sky-600">
                     Rp {totalPrice.toLocaleString("id-ID")}
                   </span>
                 </div>
@@ -685,7 +701,7 @@ export default function AdminDashboardPage() {
                   <button 
                     onClick={() => handleMarkAsPaid(Number(orderId))}
                     disabled={updatingStatus}
-                    className="w-full py-4 bg-emerald-700 hover:bg-emerald-800 text-white rounded-2xl text-xs font-bold uppercase transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4 shadow-lg"
+                    className="w-full py-4 bg-gradient-to-r from-sky-600 to-indigo-600 hover:from-sky-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-bold uppercase tracking-wider transition flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-4 shadow-lg shadow-sky-600/25"
                   >
                     <CheckCheck size={16} /> Konfirmasi Pembayaran (Ubah Jadi Paid)
                   </button>
