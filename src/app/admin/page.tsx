@@ -32,12 +32,15 @@ import {
   Users,
   Tag,
   MapPin,
-  TrendingUp
+  TrendingUp,
+  Loader2
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   
+  // State Autentikasi & Proteksi Akses
+  const [isAuthorized, setIsAuthorized] = useState(false);
   const [adminName, setAdminName] = useState("Administrator BPH");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -66,10 +69,19 @@ export default function AdminDashboardPage() {
   const wpUrl = "/api-wp/tugu-bridge/v1";
 
   useEffect(() => {
-    const name = localStorage.getItem("admin_name");
-    if (name) setAdminName(name);
-    fetchAllAdminData();
-  }, []);
+    // 1. Verifikasi Token & Role Admin di Client
+    const token = localStorage.getItem("admin_token");
+    const role = localStorage.getItem("user_role");
+
+    if (!token || role !== "admin") {
+      router.replace("/login");
+    } else {
+      setIsAuthorized(true);
+      const name = localStorage.getItem("admin_name");
+      if (name) setAdminName(name);
+      fetchAllAdminData();
+    }
+  }, [router]);
 
   // Fetch Data Komprehensif dari REST API WordPress Plugin
   const fetchAllAdminData = async () => {
@@ -173,6 +185,16 @@ export default function AdminDashboardPage() {
     { name: 'Kelola UMKM', href: '/admin/umkm', icon: ShoppingBag, active: false },
     { name: 'Kelola Galeri Foto', href: '/admin/gallery', icon: Camera, active: false },
   ];
+
+  // Tampilan Loading jika Belum Terotorisasi
+  if (!isAuthorized) {
+    return (
+      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center gap-3 text-white font-sans">
+        <Loader2 className="animate-spin text-sky-400" size={36} />
+        <p className="text-xs text-slate-400 font-medium">loading....</p>
+      </div>
+    );
+  }
 
   return (
     <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-sky-50/30 to-indigo-50/20 text-slate-800 antialiased selection:bg-sky-500 selection:text-white flex flex-col md:flex-row font-sans relative ${isMobileSidebarOpen ? 'overflow-hidden h-screen' : ''}`}>
